@@ -1,0 +1,25 @@
+{
+  "name": "baby",
+  "version": "0.1.0",
+  "description": "Self used scripts kit.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo 'babyTest'"
+  },
+  "devDependencies": {
+    "commander": ">= 2.9.0"
+  },
+  "keywords": [
+    "tools",
+    "kit"
+  ],
+  "bin": {
+    "baby": "./bin/index.js"
+  },
+  "author": "TaoAlpha",
+  "license": "MIT",
+  "dependencies": {
+    "minimist": "^1.2.0",
+    "optimist": "^0.6.1"
+  }
+}
