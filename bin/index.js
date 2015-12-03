@@ -234,8 +234,10 @@ var Tasks = {
         2:"-t,--time       Set delay time for sleep",
         3:"-n,--name       Use pre-saved shortcuts of ssh address",
         4:"-a,--add        Add new task to todo list",
-        5:"-d,--delete     Delete specific task in todo list",
-        6:"-e,--edit       Edit specific task in todo list"
+        5:"-d,--done       Mark specific task as done",
+        6:"-e,--edit       Edit specific task in todo list",
+        7:"-u,--undone     Mark specific task as undone",
+        8:"-r,--remove     Remove specific task"
       }
     }
     console.log("Welcome to baby ! ^_^")
@@ -328,4 +330,6 @@ if(userArgs._[0]){
   }else{
     Tasks["help"](userArgs)
   }
+}else{
+  Tasks["help"](userArgs)
 }
