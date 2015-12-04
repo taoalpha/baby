@@ -1,13 +1,16 @@
 #! /usr/bin/env node
 // modules from third party
-var parseArgs = require('minimist');
-var child = require('child_process');
+var parseArgs = require('minimist')
+var child = require('child_process')
+var path = require("path")
+var url = require("url")
 var fs = require("fs")
 var Trie = require("../lib/trie")
-//var complete = require('../lib/complete');
+var http = require('http')
+//var complete = require('../lib/complete')
 
 // get arguments
-var userArgs = parseArgs(process.argv.slice(2));
+var userArgs = parseArgs(process.argv.slice(2))
 
 
 //complete({
@@ -37,7 +40,7 @@ var Tasks = {
   // put the display to sleep
   sleep:function(args){
     var delay = args._[1] || args["t"] || args["time"] || 2
-    console.log("will sleep after "+delay+" seconds, happy rest!");
+    console.log("will sleep after "+delay+" seconds, happy rest!")
     setTimeout(function(){
      child.exec('system_profiler SPUSBDataType | grep TaoAlpha', function(err, stdout, stderr) {
         child.exec('pmset displaysleepnow')
@@ -54,7 +57,7 @@ var Tasks = {
     }
     child.exec("wc -w "+filepath,function(err,out,stderr){
       initial_lines = out.split("/")[0]
-    });
+    })
     var vim = child.spawn('vim',[filepath],{
       stdio:'inherit'
     })
@@ -62,7 +65,7 @@ var Tasks = {
       // no output ?
       child.exec("wc -w "+filepath,function(err,out,stderr){
         end_lines = out.split("/")[0] 
-        var color = Colors.FgGreen + "+ ";
+        var color = Colors.FgGreen + "+ "
         if(end_lines - initial_lines == 0){
           color = Colors.FgYellow
         }
@@ -158,8 +161,8 @@ var Tasks = {
     var presetaddresses = {
       weirss : ["root@weirss.me"]
       ,gary : ["gary@zzgary.info","-p","2120"]
-      ,aws : ["-i",process.env.home+"/temp/taoalpha.pem","ubuntu@52.32.254.98"]
-      ,groupfinder : ["-i",process.env.home+"/temp/aws.pem","ubuntu@52.26.51.6"]
+      ,aws : ["-i",process.env.HOME+"/temp/taoalpha.pem","ubuntu@52.32.254.98"]
+      ,groupfinder : ["-i",process.env.HOME+"/temp/aws.pem","ubuntu@52.26.51.6"]
     }
     var address = ""
     if(args._[1]){
@@ -214,11 +217,65 @@ var Tasks = {
       })
     }
   },
+  // rss reader
+  rss:function(args){
+    
+  },
+  //angularjs
+  serve:function(args){
+    var pathname = path.join(__dirname,'../lib/angular/')
+    if(exists(args._[1])){
+      pathname = args._[1]
+    }
+    child.exec('open http://localhost:8080/', function(err, stdout, stderr) {})
+    var handler = function(request, response) {
+    
+      var uri = url.parse(request.url).pathname
+        , filename = path.join(pathname, uri);
+      
+      fs.exists(filename, function(exists) {
+        if(!exists) {
+          response.writeHead(404, {"Content-Type": "text/plain"});
+          response.write("404 Not Found\n");
+          response.end();
+          return;
+        }
+    
+        if (fs.statSync(filename).isDirectory()) filename += '/index.html';
+    
+        fs.readFile(filename, function(err, file) {
+          if(err) {        
+            response.writeHead(500, {"Content-Type": "text/plain"});
+            response.write(err + "\n");
+            response.end();
+            return;
+          }
+    
+          response.writeHead(200);
+          response.end(file);
+        });
+      });
+    }
+    var app = http.createServer(handler)
+    var io = require('socket.io')(app)
+    app.listen(8080);
+
+    io.on('connection', function (socket) {
+      socket.on('exit', function (data) {
+        //Tasks.todo(data)
+        sayGoodBye()
+      });
+    });
+    
+    console.log("Static file server running at\n  => http://localhost:8080/\nCTRL + C to shutdown");
+  },
+  // open leetcode
   oj:function(args){
     child.exec('open https://leetcode.com/problemset/algorithms/', function(err, stdout, stderr) {
       sayGoodBye()
     })
   },
+  // show help
   help:function(args){
     var helpDoc = {
       usage:{
