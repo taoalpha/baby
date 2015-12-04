@@ -37,12 +37,10 @@ var Tasks = {
   // put the display to sleep
   sleep:function(args){
     var delay = args._[1] || args["t"] || args["time"] || 2
-    console.log(`will sleep after ${delay} seconds, happy rest!`);
+    console.log("will sleep after "+delay+" seconds, happy rest!");
     setTimeout(function(){
      child.exec('system_profiler SPUSBDataType | grep TaoAlpha', function(err, stdout, stderr) {
-      //if(stdout.length>0){
         child.exec('pmset displaysleepnow')
-      //}
       })
     },delay*1000)
   },
@@ -86,6 +84,8 @@ var Tasks = {
         var newTask = {}
         newTask.task = args.a
         newTask.status = "ongoing"
+        newTask.addTime = new Date()+''
+        newTask.doneTime = ''
         todoLists.push(newTask)
         content.total = parseInt(content.total) + 1
       }else{
@@ -102,6 +102,7 @@ var Tasks = {
     }else if(exists(args.d)){
       if(args.d !== true && parseInt(args.d) == parseInt(args.d)){
         todoLists[parseInt(args.d)].status = "done"
+        todoLists[parseInt(args.d)].doneTime = new Date()+''
       }else{
         console.log(`No task specified!`)
         Tasks.help("todo")
@@ -109,6 +110,7 @@ var Tasks = {
     }else if(exists(args.u)){
       if(args.u !== true && parseInt(args.u) == parseInt(args.u)){
         todoLists[args.u].status = "ongoing"
+        todoLists[parseInt(args.d)].doneTime = ''
       }else{
         console.log(`no task specified!`)
         Tasks.help("todo")
