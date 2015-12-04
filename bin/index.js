@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 // modules from third party
 var parseArgs = require('minimist')
+var readline = require('readline')
 var child = require('child_process')
 var path = require("path")
 var url = require("url")
@@ -79,69 +80,96 @@ var Tasks = {
   },
   // todo task
   todo:function(args){
-    var filepath = __dirname+'/../data/todo.json'
-    var content = JSON.parse(fs.readFileSync(filepath))
-    var todoLists = content.items
-    if(exists(args.a)){
-      if(args.a  && args.a !== true){
-        var newTask = {}
-        newTask.task = args.a
-        newTask.status = "ongoing"
-        newTask.addTime = new Date()+''
-        newTask.doneTime = ''
-        todoLists.push(newTask)
-        content.total = parseInt(content.total) + 1
-      }else{
-        console.log(`No task found!`)
-        Tasks.help("todo")
-      }
-    }else if(exists(args.e)){
-      if(args.e !== true && parseInt(args.e) == parseInt(args.e)){
-        todoLists[args.e].task = args._[1]
-      }else{
-        console.log(`No task specified!`)
-        Tasks.help("todo")
-      }
-    }else if(exists(args.d)){
-      if(args.d !== true && parseInt(args.d) == parseInt(args.d)){
-        todoLists[parseInt(args.d)].status = "done"
-        todoLists[parseInt(args.d)].doneTime = new Date()+''
-      }else{
-        console.log(`No task specified!`)
-        Tasks.help("todo")
-      }
-    }else if(exists(args.u)){
-      if(args.u !== true && parseInt(args.u) == parseInt(args.u)){
-        todoLists[args.u].status = "ongoing"
-        todoLists[parseInt(args.d)].doneTime = ''
-      }else{
-        console.log(`no task specified!`)
-        Tasks.help("todo")
-      }
-    }else if(exists(args.clear)){
-      content.items = []
-      content.total = 0 
-    }else if(exists(args.r)){
-      if(args.r !== true && parseInt(args.r) == parseInt(args.r)){
-        todoLists.splice(parseInt(args.r),1)
-      }
-      content.total = parseInt(content.total) + 1
-    }
-
-    if(content.items.length<1){
-      console.log("Now you have no tasks on list, add some ^_^ !")
-    }else{
-      content.items.map(function(v,i){
-        if(v.status == "done"){
-          console.log(`${Colors.FgGreen}${i}  \u2713 ${v.status}      ${v.task}${Colors.Reset}`)
-        }else if(v.status == "ongoing"){
-          console.log(`${Colors.FgRed}${i}    ${v.status}   ${v.task}${Colors.Reset}`)
-        }else if(v.status == "obsolete"){
-          console.log(`${Colors.FgYellow}${i}    ${v.status}    ${v.task}${Colors.Reset}`)
+    var filepath = path.join(__dirname,'../data/todo.json')
+    var filestatus = fileExists(filepath)
+    if(!filestatus){
+      var rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+      });
+      rl.question("Will initialize the task profile (Y/n) ? ", function(answer) {
+        if(answer.toLowerCase() == "y"){
+          var data = {}
+          data.total = 0
+          data.items = []
+          data.doneItems = []
+          fs.writeFileSync(filepath,JSON.stringify(data))
+          sayGoodBye()
         }
-      })
+        rl.close();
+      });
+    }else{
+      var content = JSON.parse(fs.readFileSync(filepath))
+      var todoLists = content.items
+      if(exists(args.a)){
+        if(args.a  && args.a !== true){
+          var newTask = {}
+          newTask.task = args.a
+          newTask.status = "ongoing"
+          newTask.addTime = new Date()+''
+          newTask.doneTime = ''
+          todoLists.push(newTask)
+          content.total = parseInt(content.total) + 1
+        }else{
+          console.log(`No task found!`)
+          Tasks.help("todo")
+        }
+      }else if(exists(args.e)){
+        if(args.e !== true && parseInt(args.e) == parseInt(args.e)){
+          todoLists[args.e].task = args._[1]
+        }else{
+          console.log(`No task specified!`)
+          Tasks.help("todo")
+        }
+      }else if(exists(args.d)){
+        if(args.d !== true && parseInt(args.d) == parseInt(args.d)){
+          todoLists[parseInt(args.d)].status = "done"
+          todoLists[parseInt(args.d)].doneTime = new Date()+''
+        }else{
+          console.log(`No task specified!`)
+          Tasks.help("todo")
+        }
+      }else if(exists(args.u)){
+        if(args.u !== true && parseInt(args.u) == parseInt(args.u)){
+          todoLists[args.u].status = "ongoing"
+          todoLists[parseInt(args.u)].doneTime = ''
+        }else{
+          console.log(`no task specified!`)
+          Tasks.help("todo")
+        }
+      }else if(exists(args.clean)){
+        // clean the done tasks
+        for(var i =0;i<content.items.length;i++){
+          if(content.items[i].status == "done"){
+            content.doneItems.push(content.items.splice(i,1))
+            i --
+          }
+        }
+      }else if(exists(args.clear)){
+        content.items = []
+        content.total = 0 
+      }else if(exists(args.r)){
+        if(args.r !== true && parseInt(args.r) == parseInt(args.r)){
+          todoLists.splice(parseInt(args.r),1)
+        }
+        content.total = parseInt(content.total) + 1
+      }
+
+      if(content.items.length<1){
+        console.log("Now you have no tasks on list, add some ^_^ !")
+      }else{
+        content.items.map(function(v,i){
+          if(v.status == "done"){
+            console.log(`${Colors.FgGreen}${toLength(i,3)}\u2713 ${toLength(v.status,10)}${v.task}${Colors.Reset}`)
+          }else if(v.status == "ongoing"){
+            console.log(`${Colors.FgRed}${toLength(i,5)}${toLength(v.status,10)}${v.task}${Colors.Reset}`)
+          }else if(v.status == "obsolete"){
+            console.log(`${Colors.FgYellow}${toLength(i,5)}${toLength(v.status,10)}${v.task}${Colors.Reset}`)
+          }
+        })
+      }
+      fs.writeFileSync(filepath,JSON.stringify(content))
     }
-    fs.writeFileSync(filepath,JSON.stringify(content))
   },
   // positive words!
   praise:function(args){
@@ -190,7 +218,7 @@ var Tasks = {
       //}
       //fs.writeFileSync("../data/trie.json",JSON.stringify(tree))
       tree.autocomplete(args._[1]).slice(0,10).map(function(v){
-        var fixLenghtItem = (v + (new Array(50)).join(" ")).slice(0,30)
+        var fixLenghtItem = toLength(v,30)
         console.log(`${fixLenghtItem}${cdnjs[v]}`)
       })
 
@@ -233,27 +261,26 @@ var Tasks = {
       var uri = url.parse(request.url).pathname
         , filename = path.join(pathname, uri);
       
-      fs.exists(filename, function(exists) {
-        if(!exists) {
-          response.writeHead(404, {"Content-Type": "text/plain"});
-          response.write("404 Not Found\n");
+      var filestatus = fileExists(filename)
+      if(!filestatus) {
+        response.writeHead(404, {"Content-Type": "text/plain"});
+        response.write("404 Not Found\n");
+        response.end();
+        return;
+      }
+    
+      if (fs.statSync(filename).isDirectory()) filename += '/index.html';
+    
+      fs.readFile(filename, function(err, file) {
+        if(err) {        
+          response.writeHead(500, {"Content-Type": "text/plain"});
+          response.write(err + "\n");
           response.end();
           return;
         }
     
-        if (fs.statSync(filename).isDirectory()) filename += '/index.html';
-    
-        fs.readFile(filename, function(err, file) {
-          if(err) {        
-            response.writeHead(500, {"Content-Type": "text/plain"});
-            response.write(err + "\n");
-            response.end();
-            return;
-          }
-    
-          response.writeHead(200);
-          response.end(file);
-        });
+        response.writeHead(200);
+        response.end(file);
       });
     }
     var app = http.createServer(handler)
@@ -285,6 +312,7 @@ var Tasks = {
         praise:"baby praise",
         read:"baby read",
         todo:"baby todo [ -a -d -e ] ...",
+        serve:"baby serve <path>", 
         help:"baby help <command>",
       },
       option:{
@@ -367,6 +395,23 @@ function exists(val){
   return typeof val !== "undefined"
 }
 
+// Fix length for string
+function toLength(val,len){
+  var val = val+""
+  return (val+(new Array(val.length*10)).join(" ")).slice(0,len)
+}
+
+function fileExists(filePath)
+{
+  try
+  {
+    return fs.statSync(filePath).isFile();
+  }
+  catch (err)
+  {
+    return false;
+  }
+}
 
 // assign tasks according to the args
 
