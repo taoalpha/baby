@@ -431,6 +431,9 @@ if(userArgs._[0]){
     Tasks[userArgs._[0]](userArgs)
   }else if(shortName.hasOwnProperty(userArgs._[0])){
     Tasks[shortName[userArgs._[0]]](userArgs)
+  }else if(fileExists(userArgs._[0])){
+    userArgs._[1] = userArgs._[0]
+    Tasks.edit(userArgs)
   }else{
     Tasks["help"](userArgs)
   }
