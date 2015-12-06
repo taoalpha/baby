@@ -114,14 +114,16 @@ var Tasks = {
           console.log(`No task found!`)
           Tasks.help("todo")
         }
-      }else if(exists(args.e)){
+      }
+      if(exists(args.e)){
         if(args.e !== true && parseInt(args.e) == parseInt(args.e)){
           todoLists[args.e].task = args._[1]
         }else{
           console.log(`No task specified!`)
           Tasks.help("todo")
         }
-      }else if(exists(args.d)){
+      }
+      if(exists(args.d)){
         if(args.d !== true && parseInt(args.d) == parseInt(args.d)){
           todoLists[parseInt(args.d)].status = "done"
           todoLists[parseInt(args.d)].doneTime = new Date()+''
@@ -138,7 +140,8 @@ var Tasks = {
           Tasks.help("todo")
           return
         }
-      }else if(exists(args.u)){
+      }
+      if(exists(args.u)){
         if(args.u !== true && parseInt(args.u) == parseInt(args.u)){
           todoLists[args.u].status = "ongoing"
           todoLists[parseInt(args.u)].doneTime = ''
@@ -146,7 +149,8 @@ var Tasks = {
           console.log(`no task specified!`)
           Tasks.help("todo")
         }
-      }else if(exists(args.clean)){
+      }
+      if(exists(args.clean)){
         // clean the done tasks
         for(var i =0;i<content.items.length;i++){
           if(content.items[i].status == "done"){
@@ -154,10 +158,12 @@ var Tasks = {
             i --
           }
         }
-      }else if(exists(args.clear)){
+      }
+      if(exists(args.clear)){
         content.items = []
         content.total = 0 
-      }else if(exists(args.r)){
+      }
+      if(exists(args.r)){
         if(args.r !== true && parseInt(args.r) == parseInt(args.r)){
           todoLists.splice(parseInt(args.r),1)
         }
