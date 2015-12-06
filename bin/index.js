@@ -330,6 +330,8 @@ var Tasks = {
       delete temp
       if(args.latest){
         npmHelper(packages)
+      }else{
+        npmHelper(packages,'wanted')
       }
     }
   },
@@ -344,6 +346,7 @@ var Tasks = {
         read:"baby read",
         todo:"baby todo [ -a -d -e ] ...",
         serve:"baby serve <path>", 
+        npm:"baby npm <command> [--latest]",
         help:"baby help <command>",
       },
       option:{
@@ -461,14 +464,19 @@ function pathParser(args){
 }
 
 // helper for npm
-function npmHelper(packages){
+function npmHelper(packages,flag){
 
   if(Object.keys(packages).length == 0){
     sayGoodBye()
     return
   }else{
+    var item = Object.keys(packages)[0]
+    var version = "latest"
+    if(flag == "wanted"){
+      version = packages[item].wanted
+    }
     console.log('Installing '+item)
-    var single = child.spawn('npm',['install',item+'@latest','--save'],{
+    var single = child.spawn('npm',['install',item+'@'+version,'--save'],{
       stdio:"inherit"
     })
     single.on('close',function(){
