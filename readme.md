@@ -4,13 +4,16 @@
 
 ```
 Usage:
-  baby edit <path-to-file> ...
-  baby sleep [-t | --time]
-  baby ssh <address> [-n | --name]
-  baby praise
-  baby read
-  baby todo [ -a -d -e ] ...
-  baby help <command>
+  baby edit <path-to-file> ...       Edit one file, use vim as the default editor
+  baby sleep [-t | --time]           Close the display within specific duration
+  baby ssh <address> [-n | --name]   Log in with an address or a shortcut name
+  baby praise                        Show me some positive energy
+  baby read                          Pick a random book from my reading list and open it
+  baby todo [ -a -d -e ] ...         A simple todo command tool
+  baby serve <path>                  Create a http server with any path
+  baby npm <command> [--latest]      Help update local npm modules to the latest or wanted version
+  baby summary                       Show a simple statistic of editing activity etc
+  baby help <command>                Show this screen
 
 Options:
   -h,--help       Show this screen.

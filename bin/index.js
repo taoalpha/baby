@@ -67,11 +67,20 @@ var Tasks = {
       child.exec("wc -w "+filepath,function(err,out,stderr){
         end_lines = out.split("/")[0] 
         var color = Colors.FgGreen + "+ "
+        args._[1] = 'coding'
+        var data = {}
+        data.addCount = end_lines - initial_lines
+        data.delCount = 0
         if(end_lines - initial_lines == 0){
           color = Colors.FgYellow
         }
         if(end_lines - initial_lines < 0){
+          data.delCount = initial_lines - end_lines
+          data.addCount = 0
           color = Colors.FgRed
+        }
+        if(end_lines - initial_lines !== 0){
+          Tasks.summary(args,data)
         }
         console.log(`You have made ${color}${ end_lines - initial_lines }${Colors.Reset} changes !`)
         sayGoodBye() 
@@ -99,7 +108,8 @@ var Tasks = {
         rl.close();
       });
     }else{
-      var content = JSON.parse(fs.readFileSync(filepath))
+      var content = require(filepath)
+      //JSON.parse(fs.readFileSync(filepath))
       var todoLists = content.items
       if(exists(args.a)){
         if(args.a  && args.a !== true){
@@ -198,6 +208,40 @@ var Tasks = {
       }
     });
     setInterval(praiseMe,2000)
+  },
+  // gloabl statistics
+  summary:function(args,data){
+    // need a config file
+    var filepath = path.join(__dirname,'../data/gSummary.json')
+    var filestatus = fileExists(filepath)
+    if(!filestatus){
+      var rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+      });
+      rl.question("Will initialize the summary report (Y/n) ? ", function(answer) {
+        if(answer.toLowerCase() == "y"){
+          var data = {}
+          data.total= 0
+          data.coding = {}
+          data.coding.addCount = 0
+          data.coding.delCount = 0
+          fs.writeFileSync(filepath,JSON.stringify(data))
+          sayGoodBye()
+        }
+        rl.close();
+      });
+    }else{
+      var summaryReport = require(filepath)
+      if(args._[1] == "coding" && data){
+        summaryReport.coding.addCount += data.addCount
+        summaryReport.coding.delCount += data.delCount
+        fs.writeFileSync(filepath,JSON.stringify(summaryReport))
+      }else{
+        console.log(`You have made ${summaryReport.coding.addCount + summaryReport.coding.delCount} modifications! Congratulations!`)
+        console.log(`There are ${Colors.FgGreen} + ${summaryReport.coding.addCount} ${Colors.Reset} insertions and ${Colors.FgRed} - ${summaryReport.coding.delCount} ${Colors.Reset} deletions!`)
+      }
+    }
   },
   // connect ssh
   ssh:function(args){
@@ -345,15 +389,16 @@ var Tasks = {
   help:function(args){
     var helpDoc = {
       usage:{
-        edit:"baby edit <path-to-file> ...",
-        sleep:"baby sleep [-t | --time]",
-        ssh:"baby ssh <address> [-n | --name]",
-        praise:"baby praise",
-        read:"baby read",
-        todo:"baby todo [ -a -d -e ] ...",
-        serve:"baby serve <path>", 
-        npm:"baby npm <command> [--latest]",
-        help:"baby help <command>",
+        edit:    "baby edit <path-to-file> ...       Edit one file, use vim as the default editor",
+        sleep:   "baby sleep [-t | --time]           Close the display within specific duration",
+        ssh:     "baby ssh <address> [-n | --name]   Log in with an address or a shortcut name",
+        praise:  "baby praise                        Show me some positive energy",
+        read:    "baby read                          Pick a random book from my reading list and open it",
+        todo:    "baby todo [ -a -d -e ] ...         A simple todo command tool",
+        serve:   "baby serve <path>                  Create a http server with any path", 
+        npm:     "baby npm <command> [--latest]      Help update local npm modules to the latest or wanted version",
+        summary: "baby summary                       Show a simple statistic of editing activity etc",
+        help:    "baby help <command>                Show this screen",
       },
       option:{
         0:"-h,--help       Show this screen.",
@@ -504,6 +549,15 @@ var shortName = {
   kuawo:"praise",
   t:"todo",
   ss:"ssh"
+}
+
+// load config file first if exists
+// should be some useful and basic information
+// like Enable the summary report
+// or Customize the path of the data file
+var configFile = path.join(__dirname,'../data/config.json')
+if(fileExists(configFile)){
+  userArgs.CONFIG = require(configFile)
 }
 
 if(userArgs._[0]){
