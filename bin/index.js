@@ -52,7 +52,7 @@ var Tasks = {
   edit:function(args){
     var initial_lines = 0, end_lines = 0,filepath = ''
     if(args._[1]){
-      filepath = process.cwd()+"/"+args._[1]
+      filepath = path.join.apply(path,pathParser([process.cwd(),args._[1]]))
     }else{
       filepath = __dirname+'/index.js'
     }
@@ -126,8 +126,17 @@ var Tasks = {
           todoLists[parseInt(args.d)].status = "done"
           todoLists[parseInt(args.d)].doneTime = new Date()+''
         }else{
-          console.log(`No task specified!`)
+          if(content.items.length<1){
+            console.log("Now you have no tasks on list, add some ^_^ !")
+          }else{
+            content.doneItems.map(function(v,i){
+              if(v.status == "done"){
+                console.log(`${Colors.FgGreen}${toLength(i,3)}\u2713 ${toLength(v.status,10)}${v.task}${Colors.Reset}`)
+              }
+            })
+          }
           Tasks.help("todo")
+          return
         }
       }else if(exists(args.u)){
         if(args.u !== true && parseInt(args.u) == parseInt(args.u)){
@@ -141,7 +150,7 @@ var Tasks = {
         // clean the done tasks
         for(var i =0;i<content.items.length;i++){
           if(content.items[i].status == "done"){
-            content.doneItems.push(content.items.splice(i,1))
+            content.doneItems.push(content.items.splice(i,1)[0])
             i --
           }
         }
@@ -253,7 +262,7 @@ var Tasks = {
   serve:function(args){
     var pathname = path.join(__dirname,'../lib/angular/')
     if(exists(args._[1])){
-      pathname = args._[1]
+      pathname = path.join.apply(pathParser([process.cwd(),args._[1]]))
     }
     child.exec('open http://localhost:8080/', function(err, stdout, stderr) {})
     var handler = function(request, response) {
@@ -261,7 +270,7 @@ var Tasks = {
       var uri = url.parse(request.url).pathname
         , filename = path.join(pathname, uri);
       
-      var filestatus = fileExists(filename)
+      var filestatus = fileExists(filename,'dir')
       if(!filestatus) {
         response.writeHead(404, {"Content-Type": "text/plain"});
         response.write("404 Not Found\n");
@@ -301,6 +310,28 @@ var Tasks = {
     child.exec('open https://leetcode.com/problemset/algorithms/', function(err, stdout, stderr) {
       sayGoodBye()
     })
+  },
+  // npm command
+  npm:function(args){
+    if(exists(args._[1]) && args._[1] == "update"){
+      var packages = child.execSync('npm outdated').toString()
+      packages = packages.split(/\n/).slice(1,packages.length)
+      packages.pop()
+      var temp = {}
+      packages.map(function(v){
+        var re = /[a-zA-Z0-9-_\.]+\s*?/g
+        var result = v.match(re)
+        temp[result[0]] = {}
+        temp[result[0]].current = result[1]
+        temp[result[0]].wanted = result[2]
+        temp[result[0]].latest = result[3]
+      })
+      packages = temp
+      delete temp
+      if(args.latest){
+        npmHelper(packages)
+      }
+    }
   },
   // show help
   help:function(args){
@@ -347,15 +378,13 @@ var Tasks = {
 
 // Praise me ^_^
 function praiseMe(){
-  var adj = ["awesome","fantastic","wonderful","fabulous","outstanding","legendary"]
-  console.log(`${Colors[pickRandomProperty(Colors)]}Tao, You are truly ${adj[Math.floor(Math.random()*adj.length)]}!${Colors.Reset}`)  
+  var adj = ["awesome","fantastic","wonderful","fabulous","outstanding","legendary","great","briliant","talented","amazing"]
+  console.log(`${Colors[pickRandomProperty(Colors)]}Tao, You are truly ${adj[Math.floor(Math.random()*adj.length)]}!${Colors.Reset}`)
 }
-
 
 // Colors 
 var Colors = {
 Reset : "\x1b[0m"
-,FgBlack : "\x1b[30m"
 ,FgRed : "\x1b[31m"
 ,FgGreen : "\x1b[32m"
 ,FgYellow : "\x1b[33m"
@@ -370,7 +399,6 @@ Reset : "\x1b[0m"
 ,BgBlue : "\x1b[44m"
 ,BgMagenta : "\x1b[45m"
 ,BgCyan : "\x1b[46m"
-//,BgWhite : "\x1b[47m"
 }
 
 // helper functions for picking random property from an object
@@ -401,17 +429,55 @@ function toLength(val,len){
   return (val+(new Array(val.length*10)).join(" ")).slice(0,len)
 }
 
-function fileExists(filePath)
+// check whether file or directory exists or not
+function fileExists(filePath,type)
 {
-  try
-  {
-    return fs.statSync(filePath).isFile();
+  if(type=="dir"){
+    try{
+      return fs.statSync(filePath).isDirectory();
+    }catch (err){
+      return false;
+    }
   }
-  catch (err)
-  {
+  try{
+    return fs.statSync(filePath).isFile();
+  }catch (err){
     return false;
   }
 }
+
+// path parser
+
+function pathParser(args){
+  var oLen = args.length
+  for(var i = 0;i<oLen;i++){
+    if(args[i][0] === '~' || args[i][0] === '/'){
+      var cutLen = args.splice(0,i).length
+      oLen -= cutLen
+      i -= cutLen
+    }
+  }
+  return args
+}
+
+// helper for npm
+function npmHelper(packages){
+
+  if(Object.keys(packages).length == 0){
+    sayGoodBye()
+    return
+  }else{
+    console.log('Installing '+item)
+    var single = child.spawn('npm',['install',item+'@latest','--save'],{
+      stdio:"inherit"
+    })
+    single.on('close',function(){
+      delete packages[item]
+      npmHelper(packages)
+    })
+  }
+}
+
 
 // assign tasks according to the args
 
