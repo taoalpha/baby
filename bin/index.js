@@ -385,6 +385,32 @@ var Tasks = {
       }
     }
   },
+  // initial the config file
+  init:function(args){
+    var configuration = {}
+    configuration.username = "Tao"
+    configuration.summary = true
+    configuration.todoFilePath = ''
+    var filepath = path.join(__dirname,'config.json')
+    if(!fileExists(filepath)){
+      console.log("Initialize with default configuration.")
+      fs.writeFileSync(filepath,JSON.stringify(configuration))
+    }else if(args.e){
+      args._[1] = filepath
+      Tasks.edit(args)
+    }else{
+      var config = JSON.parse(fs.readFileSync(filepath))
+      console.log("You already have one configuration file here: "+filepath)
+      console.log(config)
+      console.log("Use 'baby init -e' to edit your configuration file.")
+    }
+  },
+  // collection of tools
+  tool:function(args){
+    if(args._[1] == "pf"){
+      printFiles(process.cwd())
+    }
+  },
   // show help
   help:function(args){
     var helpDoc = {
@@ -469,7 +495,7 @@ function pickRandomProperty(obj) {
 
 function sayGoodBye(action) {
   action = action || "coding"
-  console.log(`${Colors.FgGreen}Happy ${action}, Tao !${Colors.Reset}`)
+  console.log(`${Colors.FgGreen}Happy ${action}, ${userArgs.CONFIG.username || 'tao'} !${Colors.Reset}`)
 }
 
 // check whether variable or property exist or not
@@ -537,6 +563,22 @@ function npmHelper(packages,flag){
   }
 }
 
+// print files under a specific path
+var printFiles = function(pathname,step){
+  var step = step || 1
+  //console.log(toLength('====================',step*2)+pathname)
+  var fileList = fs.readdirSync(pathname)
+  //,function(err,list){
+  if(!fileList.length) {console.log("no files");return}
+  for(var v in fileList){
+    console.log(toLength('----------------------------',step*3)+fileList[v])
+    var newpath = path.join(pathname,fileList[v])
+    if(fileExists(newpath,'dir')){
+      printFiles(newpath,step+1)
+    }
+  }
+}
+
 
 // assign tasks according to the args
 
@@ -555,7 +597,7 @@ var shortName = {
 // should be some useful and basic information
 // like Enable the summary report
 // or Customize the path of the data file
-var configFile = path.join(__dirname,'../data/config.json')
+var configFile = path.join(__dirname,'config.json')
 if(fileExists(configFile)){
   userArgs.CONFIG = require(configFile)
 }
