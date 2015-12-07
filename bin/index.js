@@ -226,6 +226,7 @@ var Tasks = {
           data.coding = {}
           data.coding.addCount = 0
           data.coding.delCount = 0
+          data.coding.days = {}
           fs.writeFileSync(filepath,JSON.stringify(data))
           sayGoodBye()
         }
@@ -233,13 +234,33 @@ var Tasks = {
       });
     }else{
       var summaryReport = require(filepath)
+      var today = new Date().toJSON().slice(0,10)
+      // clean the log and keep records up to 30 days || config.LOGDAYS
+      var logdays = args.CONFIG.logdays || 30
+      if(Object.keys(summaryReport.coding.days).length > logdays){
+        // need to deal with the datetime type...
+        var prev = new Date((new Date()).setDate((new Date()).getDate()-logdays)).toJSON().slice(0,10)
+        for(var i in summaryReport.coding.days){
+          if(i<prev){
+            delete summaryReport.coding.days[i]
+          }
+        }
+      }
       if(args._[1] == "coding" && data){
+        if(!summaryReport.coding.days[today]){
+          summaryReport.coding.days[today] = {}
+          summaryReport.coding.days[today].addCount = data.addCount
+          summaryReport.coding.days[today].delCount = data.delCount
+        }
         summaryReport.coding.addCount += data.addCount
         summaryReport.coding.delCount += data.delCount
+        summaryReport.coding.days[today].addCount += data.addCount
+        summaryReport.coding.days[today].delCount += data.delCount
         fs.writeFileSync(filepath,JSON.stringify(summaryReport))
       }else{
-        console.log(`You have made ${summaryReport.coding.addCount + summaryReport.coding.delCount} modifications! Congratulations!`)
+        console.log(`You have made ${summaryReport.coding.addCount + summaryReport.coding.delCount} modifications in total! Congratulations!`)
         console.log(`There are ${Colors.FgGreen} + ${summaryReport.coding.addCount} ${Colors.Reset} insertions and ${Colors.FgRed} - ${summaryReport.coding.delCount} ${Colors.Reset} deletions!`)
+        console.log(`Special for today: you have made ${Colors.FgGreen} + ${summaryReport.coding.days[today].addCount} ${Colors.Reset} insertions and ${Colors.FgRed} - ${summaryReport.coding.days[today].delCount} ${Colors.Reset} deletions!`)
       }
     }
   },
