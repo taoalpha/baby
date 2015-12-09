@@ -95,6 +95,107 @@ var Tasks = {
       });
     })
   },
+  // idea collection
+  idea:function(args){
+    var filepath = path.join(__dirname,'../data/idea.json')
+    var filestatus = fileExists(filepath)
+    // deal with no file and open the server
+    if(!filestatus){
+      var rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+      });
+      rl.question("Will initialize the idea collection profile (Y/n) ? ", function(answer) {
+        if(answer.toLowerCase() == "y"){
+          var data = {}
+          data.total = 0
+          data.creationTime = new Date()
+          data.lastUpdated = new Date()
+          data.ideas = []
+          fs.writeFileSync(filepath,JSON.stringify(data))
+          sayGoodBye()
+        }
+        rl.close();
+      });
+    }else{
+      // add new idea
+      var ideaData = require(filepath)
+      if(exists(args.a)){
+        var questions = ["Describe your idea: ","Inspired by: ","Under which category(life,work,travel...): ","Tag you to label it: "] 
+        // loop to ask all these questions and save all answers 
+        var callback = function(ans){
+          // store the data to the file
+          var data = {}
+          data.desc = ans[0]
+          data.inspired = ans[1]
+          data.cat = ans[2]
+          data.tags = ans[3].split(",")
+          data.status = "backlog"
+          ideaData.ideas.push(data)
+          fs.writeFileSync(filepath,JSON.stringify(ideaData))
+        }
+        ask(questions,[],callback)
+      }
+      // mark the idea with done status
+      if(exists(args.d)){
+        if(args.d !== true && parseInt(args.d) == parseInt(args.d)){
+          ideaData.ideas[args.d].status = "done"
+          fs.writeFileSync(filepath,JSON.stringify(ideaData))
+        }else{
+          Tasks.help("idea")
+        }
+      }
+      // edit current existing idea with all five questions
+      if(exists(args.e)){
+        if(args.e !== true && parseInt(args.e) == parseInt(args.e)){
+          // initial the question with the answers
+          var tData = ideaData.ideas[args.e]
+          var questions = [`Describe your idea(${tData.desc}): `,`Inspired by(${tData.inspired}): `,`Under which category(${tData.cat}): `,`Tag you to label it(${tData.tags.join(",")}): `,`Current status of this idea(${tData.status}): `] 
+          // loop to ask all these questions and save all answers 
+          var callback = function(ans){
+            // store the data to the file
+            var data = ideaData.ideas[args.e]
+            data.desc = ans[0] || data.desc
+            data.inspired = ans[1] || data.inspired
+            data.cat = ans[2] || data.cat
+            data.tags = ans[3] || ans[3].split(",") || data.tags
+            data.status = ans[4] || data.status
+            ideaData.ideas[args.e] = data
+            fs.writeFileSync(filepath,JSON.stringify(ideaData))
+            delete args.e
+            Tasks.idea(args)
+          }
+          ask(questions,[],callback)
+          return
+        }else{
+          Tasks.help("idea")
+        }
+      }
+      // remove current existing idea 
+      if(exists(args.r)){
+        if(args.r !== true && parseInt(args.r) == parseInt(args.r)){
+          ideaData.ideas.splice(args.r,1)
+          fs.writeFileSync(filepath,JSON.stringify(ideaData))
+        }else{
+          Tasks.help("idea")
+        }
+      }
+
+      if(ideaData.ideas.length<1){
+        console.log("Now you have no tasks on list, add some ^_^ !")
+      }else{
+        ideaData.ideas.map(function(v,i){
+          if(v.status =="done"){
+            console.log(`${Colors.FgGreen}${toLength(i,3)}\u2713 ${toLength(v.status,10)}${v.desc}${Colors.Reset}`)
+          }else if(v.status == "ongoing"){
+            console.log(`${Colors.FgGreen}${toLength(i,3)} ${toLength(v.status,10)}${v.desc}${Colors.Reset}`)
+          }else{
+            console.log(`${Colors.FgGreen}${toLength(i,3)} ${toLength(v.status,10)}${v.desc}${Colors.Reset}`)
+          }
+        })
+      }
+    } 
+  },
   // todo task
   todo:function(args){
     var filepath = path.join(__dirname,'../data/todo.json')
@@ -109,6 +210,8 @@ var Tasks = {
         if(answer.toLowerCase() == "y"){
           var data = {}
           data.total = 0
+          data.creationTime = new Date()
+          data.lastUpdated = new Date()
           data.items = []
           data.doneItems = []
           fs.writeFileSync(filepath,JSON.stringify(data))
@@ -189,7 +292,7 @@ var Tasks = {
         if(args.r !== true && parseInt(args.r) == parseInt(args.r)){
           todoLists.splice(parseInt(args.r),1)
         }
-        content.total = parseInt(content.total) + 1
+        content.total = parseInt(content.total) - 1
       }
 
       if(content.items.length<1){
@@ -465,6 +568,7 @@ var Tasks = {
         praise:  "baby praise                        Show me some positive energy",
         read:    "baby read                          Pick a random book from my reading list and open it",
         todo:    "baby todo [ -a -d -e ] ...         A simple todo command tool",
+        idea:    "baby idea [ -a -d -r -e ] ...      A simple idea collection tool",
         serve:   "baby serve <path>                  Create a http server with any path", 
         npm:     "baby npm <command> [--latest]      Help update local npm modules to the latest or wanted version",
         summary: "baby summary                       Show a simple statistic of editing activity etc",
@@ -605,6 +709,25 @@ function npmHelper(packages,flag){
       npmHelper(packages)
     })
   }
+}
+
+
+// ask for questions
+var ask = function(q,a,callback){
+  if(q.length==0){
+    callback(a)
+    return
+  }
+  var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  var qt = q.shift()
+  rl.question(qt, function(answer) {
+    a.push(answer)
+    rl.close();
+    ask(q,a,callback)
+  });
 }
 
 // print files under a specific path

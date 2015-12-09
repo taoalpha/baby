@@ -1,5 +1,6 @@
 node_modules/
 data/todo.json
 data/gSummary.json
+data/idea.json
 lib/todo/
 bin/config.json
