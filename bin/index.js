@@ -97,7 +97,7 @@ var Tasks = {
   },
   // idea collection
   idea:function(args){
-    var filepath = path.join(__dirname,'../data/idea.json')
+    var filepath = path.join(__dirname,'../data/.idea.json')
     var filestatus = fileExists(filepath)
     // deal with no file and open the server
     if(!filestatus){
@@ -198,7 +198,7 @@ var Tasks = {
   },
   // todo task
   todo:function(args){
-    var filepath = path.join(__dirname,'../data/todo.json')
+    var filepath = path.join(__dirname,'../data/.todo.json')
     var filestatus = fileExists(filepath)
     // deal with no file and open the server
     if(!filestatus){
@@ -327,7 +327,7 @@ var Tasks = {
   // gloabl statistics
   summary:function(args,data){
     // need a config file
-    var filepath = path.join(__dirname,'../data/gSummary.json')
+    var filepath = path.join(__dirname,'../data/.gSummary.json')
     var filestatus = fileExists(filepath)
     if(!filestatus){
       var rl = readline.createInterface({
@@ -378,8 +378,7 @@ var Tasks = {
         summaryReport.coding.days[today].delCount += data.delCount
         fs.writeFileSync(filepath,JSON.stringify(summaryReport))
       }else{
-        console.log(`You have made ${Colors.FgYellow} ${summaryReport.coding.addCount + summaryReport.coding.delCount} ${Colors.Reset} modifications in total! Congratulations!`)
-        console.log(`There are ${Colors.FgGreen} + ${summaryReport.coding.addCount} ${Colors.Reset} insertions and ${Colors.FgRed} - ${summaryReport.coding.delCount} ${Colors.Reset} deletions!`)
+        console.log(`You have made ${Colors.FgGreen} + ${summaryReport.coding.addCount} ${Colors.Reset} insertions and ${Colors.FgRed} - ${summaryReport.coding.delCount} ${Colors.Reset} deletions!`)
         console.log(`${Colors.FgYellow}Special for today:${Colors.Reset} you have made ${Colors.FgGreen} + ${summaryReport.coding.days[today].addCount} ${Colors.Reset} insertions and ${Colors.FgRed} - ${summaryReport.coding.days[today].delCount} ${Colors.Reset} deletions!`)
       }
     }
@@ -538,7 +537,7 @@ var Tasks = {
     configuration.username = "Tao"
     configuration.summary = true
     configuration.todoFilePath = ''
-    var filepath = path.join(__dirname,'config.json')
+    var filepath = path.join(__dirname,'.config.json')
     if(!fileExists(filepath)){
       console.log("Initialize with default configuration.")
       fs.writeFileSync(filepath,JSON.stringify(configuration))
@@ -764,7 +763,7 @@ var shortName = {
 // should be some useful and basic information
 // like Enable the summary report
 // or Customize the path of the data file
-var configFile = path.join(__dirname,'config.json')
+var configFile = path.join(__dirname,'.config.json')
 if(fileExists(configFile)){
   userArgs.CONFIG = require(configFile)
 }
