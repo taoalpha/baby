@@ -1,5 +1,5 @@
 node_modules/
 data/todo.json
 data/gSummary.json
-lib/angular/
+lib/todo/
 bin/config.json

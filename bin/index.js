@@ -9,6 +9,14 @@ var fs = require("fs")
 var Trie = require("../lib/trie")
 var http = require('http')
 //var complete = require('../lib/complete')
+//
+
+
+// agreement on this project
+// will use spinal-case for variables
+// will use camelCase for functions
+// will use CamelCase for class or global object
+// will use snake_case only for private variables
 
 // get arguments
 var userArgs = parseArgs(process.argv.slice(2))
@@ -91,6 +99,7 @@ var Tasks = {
   todo:function(args){
     var filepath = path.join(__dirname,'../data/todo.json')
     var filestatus = fileExists(filepath)
+    // deal with no file and open the server
     if(!filestatus){
       var rl = readline.createInterface({
         input: process.stdin,
@@ -109,6 +118,9 @@ var Tasks = {
       });
     }else{
       var content = require(filepath)
+      if(args.json){
+        return content
+      }
       //JSON.parse(fs.readFileSync(filepath))
       var todoLists = content.items
       if(exists(args.a)){
@@ -234,18 +246,23 @@ var Tasks = {
       });
     }else{
       var summaryReport = require(filepath)
-      var today = new Date().toJSON().slice(0,10)
+      var today = new Date().toLocaleDateString()
       // clean the log and keep records up to 30 days || config.LOGDAYS
       var logdays = args.CONFIG.logdays || 30
       if(Object.keys(summaryReport.coding.days).length > logdays){
-        // need to deal with the datetime type...
-        var prev = new Date((new Date()).setDate((new Date()).getDate()-logdays)).toJSON().slice(0,10)
+        var prev = new Date((new Date()).setDate((new Date()).getDate()-logdays)).toLocaleDateString()
         for(var i in summaryReport.coding.days){
           if(i<prev){
             delete summaryReport.coding.days[i]
           }
         }
       }
+      if(!summaryReport.coding.days[today]){
+        summaryReport.coding.days[today] = {}
+        summaryReport.coding.days[today].addCount = 0
+        summaryReport.coding.days[today].delCount = 0
+      }
+      // show or write the records to the data
       if(args._[1] == "coding" && data){
         if(!summaryReport.coding.days[today]){
           summaryReport.coding.days[today] = {}
@@ -258,9 +275,9 @@ var Tasks = {
         summaryReport.coding.days[today].delCount += data.delCount
         fs.writeFileSync(filepath,JSON.stringify(summaryReport))
       }else{
-        console.log(`You have made ${summaryReport.coding.addCount + summaryReport.coding.delCount} modifications in total! Congratulations!`)
+        console.log(`You have made ${Colors.FgYellow} ${summaryReport.coding.addCount + summaryReport.coding.delCount} ${Colors.Reset} modifications in total! Congratulations!`)
         console.log(`There are ${Colors.FgGreen} + ${summaryReport.coding.addCount} ${Colors.Reset} insertions and ${Colors.FgRed} - ${summaryReport.coding.delCount} ${Colors.Reset} deletions!`)
-        console.log(`Special for today: you have made ${Colors.FgGreen} + ${summaryReport.coding.days[today].addCount} ${Colors.Reset} insertions and ${Colors.FgRed} - ${summaryReport.coding.days[today].delCount} ${Colors.Reset} deletions!`)
+        console.log(`${Colors.FgYellow}Special for today:${Colors.Reset} you have made ${Colors.FgGreen} + ${summaryReport.coding.days[today].addCount} ${Colors.Reset} insertions and ${Colors.FgRed} - ${summaryReport.coding.days[today].delCount} ${Colors.Reset} deletions!`)
       }
     }
   },
@@ -293,6 +310,7 @@ var Tasks = {
       var count = 0
       var tree = new Trie()
       tree.root = trieData.root
+      // build the trie tree at the first time
       //for(var item in cdnjs){
       //  tree.insert(item)
       //}
@@ -327,6 +345,7 @@ var Tasks = {
   },
   // rss reader
   rss:function(args){
+    // will use the request and cheerio to get and parse the html, maybe need phantomjs to help me deal with some dynamic stuff
     
   },
   //angularjs
@@ -371,6 +390,10 @@ var Tasks = {
       socket.on('exit', function (data) {
         //Tasks.todo(data)
         sayGoodBye()
+      });
+      socket.on('getTodoList', function (data) {
+        var todoList = Tasks.todo({"json":true})
+        socket.emit("todoData",todoList)
       });
     });
     
