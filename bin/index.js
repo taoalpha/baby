@@ -66,7 +66,6 @@ complete.on("value",function(option){
 })
 
 // Initialize the omelette.
-complete.init()
 
 // get arguments
 var userArgs = parseArgs(process.argv.slice(2))
@@ -661,6 +660,10 @@ var configFile = path.join(__dirname,'.config.json')
 userArgs.CONFIG = {}
 if(Helper.fileExists(configFile)){
   userArgs.CONFIG = require(configFile)
+}
+
+if(userArgs.CONFIG.autocompletion){
+  complete.init()
 }
 
 if(userArgs._[0]){
