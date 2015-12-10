@@ -46,8 +46,11 @@ complete.on("option", function(action) {
       var cdnjs = require("../data/cdnjs.json") 
       this.reply(Object.keys(cdnjs))
       break
+    case "edit":
+      this.reply(fs.readdirSync("./"+action))
+      break
     default:
-      this.reply(fs.readdirSync("."))
+      this.reply(fs.readdirSync("./"+action))
   }
 });
 
@@ -56,6 +59,9 @@ complete.on("value",function(option){
     case "-n":
       this.reply(["groupfinder","aws","gary","weirss"])
       break
+    default:
+      var prev = arguments[1].split(" ")[1]
+      this.reply(fs.readdirSync("./"+prev+"/"+option))
   }
 })
 
@@ -666,9 +672,14 @@ if(userArgs._[0]){
     userArgs._[1] = userArgs._[0]
     Tasks.edit(userArgs)
   }else{
-    Tasks["help"](userArgs)
+    var filepath = path.join(process.cwd(),userArgs._.join("/"))
+    if(Helper.fileExists(filepath)){
+      userArgs._[1] = filepath
+      Tasks.edit(userArgs)
+    }else{
+      Tasks["help"](userArgs)
+    }
   }
+}else{
+  Tasks["help"](userArgs)
 }
-//else{
-//  Tasks["help"](userArgs)
-//}

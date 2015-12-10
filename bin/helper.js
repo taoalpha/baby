@@ -1,5 +1,6 @@
 #! /usr/bin/env node
 var fs = require("fs")
+var path = require("path")
 
 var Helper = {
   // colors need to use
