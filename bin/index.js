@@ -11,8 +11,6 @@ var http = require('http')
 var Helper = require('./helper')
 
 //var complete = require('../lib/complete')
-//
-
 
 // agreement on this project
 // will use spinal-case for variables
@@ -22,7 +20,6 @@ var Helper = require('./helper')
 
 // get arguments
 var userArgs = parseArgs(process.argv.slice(2))
-
 
 //complete({
 //  program: 'baby',
@@ -45,36 +42,34 @@ var userArgs = parseArgs(process.argv.slice(2))
 //  }
 //});
 
-
-
 var Tasks = {
   // put the display to sleep
-  sleep:function(args){
+  sleep : (args) => {
     var delay = args._[1] || args["t"] || args["time"] || 2
     console.log("will sleep after "+delay+" seconds, happy rest!")
-    setTimeout(function(){
-     child.exec('system_profiler SPUSBDataType | grep TaoAlpha', function(err, stdout, stderr) {
+    setTimeout(() => {
+     child.exec('system_profiler SPUSBDataType | grep TaoAlpha', (err, stdout, stderr) => {
         child.exec('pmset displaysleepnow')
       })
     },delay*1000)
   },
   // edit some file or this script
-  edit:function(args){
+  edit : (args) => {
     var initial_lines = 0, end_lines = 0,filepath = ''
     if(args._[1]){
       filepath = path.join.apply(path,Helper.pathParser([process.cwd(),args._[1]]))
     }else{
       filepath = __dirname+'/index.js'
     }
-    child.exec("wc -w "+filepath,function(err,out,stderr){
+    child.exec("wc -w "+filepath,(err,out,stderr) => {
       initial_lines = out.split("/")[0]
     })
     var vim = child.spawn('vim',[filepath],{
       stdio:'inherit'
     })
-    vim.on('close',function(code){
+    vim.on('close',(code) => {
       // no output ?
-      child.exec("wc -w "+filepath,function(err,out,stderr){
+      child.exec("wc -w "+filepath,(err,out,stderr) => {
         end_lines = out.split("/")[0] 
         var color = Helper.Colors.FgGreen + "+ "
         args._[1] = 'coding'
@@ -98,7 +93,7 @@ var Tasks = {
     })
   },
   // idea collection
-  idea:function(args){
+  idea : (args) => {
     var filepath = path.join(__dirname,'../data/.idea.json')
     var filestatus = Helper.fileExists(filepath)
     // deal with no file and open the server
@@ -107,7 +102,7 @@ var Tasks = {
         input: process.stdin,
         output: process.stdout
       });
-      rl.question("Will initialize the idea collection profile (Y/n) ? ", function(answer) {
+      rl.question("Will initialize the idea collection profile (Y/n) ? ", (answer) => {
         if(answer.toLowerCase() == "y"){
           var data = {}
           data.total = 0
@@ -125,7 +120,7 @@ var Tasks = {
       if(Helper.exists(args.a)){
         var questions = ["Describe your idea: ","Inspired by: ","Under which category(life,work,travel...): ","Tag you to label it: "] 
         // loop to ask all these questions and save all answers 
-        var callback = function(ans){
+        var callback = (ans) => {
           // store the data to the file
           var data = {}
           data.desc = ans[0]
@@ -154,7 +149,7 @@ var Tasks = {
           var tData = ideaData.ideas[args.e]
           var questions = [`Describe your idea(${tData.desc}): `,`Inspired by(${tData.inspired}): `,`Under which category(${tData.cat}): `,`Tag you to label it(${tData.tags.join(",")}): `,`Current status of this idea(${tData.status}): `] 
           // loop to ask all these questions and save all answers 
-          var callback = function(ans){
+          var callback = (ans) => {
             // store the data to the file
             var data = ideaData.ideas[args.e]
             data.desc = ans[0] || data.desc
@@ -186,7 +181,7 @@ var Tasks = {
       if(ideaData.ideas.length<1){
         console.log("Now you have no tasks on list, add some ^_^ !")
       }else{
-        ideaData.ideas.map(function(v,i){
+        ideaData.ideas.map((v,i) => {
           if(v.status =="done"){
             console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)}\u2713 ${Helper.toLength(v.status,10)}${v.desc}${Helper.Colors.Reset}`)
           }else if(v.status == "ongoing"){
@@ -199,7 +194,7 @@ var Tasks = {
     } 
   },
   // todo task
-  todo:function(args){
+  todo : (args) => {
     var filepath = path.join(__dirname,'../data/.todo.json')
     var filestatus = Helper.fileExists(filepath)
     // deal with no file and open the server
@@ -208,7 +203,7 @@ var Tasks = {
         input: process.stdin,
         output: process.stdout
       });
-      rl.question("Will initialize the task profile (Y/n) ? ", function(answer) {
+      rl.question("Will initialize the task profile (Y/n) ? ", (answer) => {
         if(answer.toLowerCase() == "y"){
           var data = {}
           data.total = 0
@@ -258,7 +253,7 @@ var Tasks = {
           if(content.items.length<1){
             console.log("Now you have no tasks on list, add some ^_^ !")
           }else{
-            content.doneItems.map(function(v,i){
+            content.doneItems.map((v,i) => {
               if(v.status == "done"){
                 console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)}\u2713 ${Helper.toLength(v.status,10)}${v.task}${Helper.Colors.Reset}`)
               }
@@ -300,7 +295,7 @@ var Tasks = {
       if(content.items.length<1){
         console.log("Now you have no tasks on list, add some ^_^ !")
       }else{
-        content.items.map(function(v,i){
+        content.items.map((v,i) => {
           if(v.status == "done"){
             console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)}\u2713 ${Helper.toLength(v.status,10)}${v.task}${Helper.Colors.Reset}`)
           }else if(v.status == "ongoing"){
@@ -314,12 +309,12 @@ var Tasks = {
     }
   },
   // positive words!
-  praise:function(args){
+  praise : (args) => {
     var stdin = process.stdin;
     stdin.setRawMode( true );
     //stdin.resume();
     stdin.setEncoding( 'utf8' );
-    stdin.on( 'data', function( key ){
+    stdin.on( 'data', ( key ) => {
       if ( key === 'c' || key == '\u0003' ) {
         process.exit();
       }
@@ -327,7 +322,7 @@ var Tasks = {
     setInterval(Helper.praiseMe,2000)
   },
   // gloabl statistics
-  summary:function(args,data){
+  summary : (args,data) => {
     // need a config file
     var filepath = path.join(__dirname,'../data/.gSummary.json')
     var filestatus = Helper.fileExists(filepath)
@@ -336,7 +331,7 @@ var Tasks = {
         input: process.stdin,
         output: process.stdout
       });
-      rl.question("Will initialize the summary report (Y/n) ? ", function(answer) {
+      rl.question("Will initialize the summary report (Y/n) ? ", (answer) => {
         if(answer.toLowerCase() == "y"){
           var data = {}
           data.total= 0
@@ -386,7 +381,7 @@ var Tasks = {
     }
   },
   // connect ssh
-  ssh:function(args){
+  ssh : (args) => {
     var presetaddresses = {
       weirss : ["root@weirss.me"]
       ,gary : ["gary@zzgary.info","-p","2120"]
@@ -402,12 +397,12 @@ var Tasks = {
     var ssh = child.spawn('ssh',address,{
       stdio:'inherit'
     });
-    ssh.on('close',function(code){
+    ssh.on('close',(code) => {
       Helper.sayGoodBye(args)
     })
   },
   // search cdnjs
-  cdn:function(args){
+  cdn : (args) => {
     if(args._[1]){
       var cdnjs = require("../data/cdnjs.json") 
       var trieData = require("../data/trie.json") 
@@ -419,7 +414,7 @@ var Tasks = {
       //  tree.insert(item)
       //}
       //fs.writeFileSync("../data/trie.json",JSON.stringify(tree))
-      tree.autocomplete(args._[1]).slice(0,10).map(function(v){
+      tree.autocomplete(args._[1]).slice(0,10).map((v) => {
         var fixLenghtItem = Helper.toLength(v,30)
         console.log(`${fixLenghtItem}${cdnjs[v]}`)
       })
@@ -429,19 +424,19 @@ var Tasks = {
     }
   },
   // random book from my reading list
-  read:function(args){
+  read : (args) => {
     var filepath = ''
     var book_dir = process.env.HOME+"/readings"
     if(args._[1]){
       filepath = [args._[1]]
     }else{
-      var books = fs.readdir(book_dir,function(err,list){
+      var books = fs.readdir(book_dir,(err,list) => {
         if (err) return err;
         filepath = [book_dir + "/" + list[Math.floor(Math.random()*list.length)]]
         var book = child.spawn('open',filepath,{
           stdio:'inherit'
         });
-        book.on('close',function(code){
+        book.on('close',(code) => {
           args.action = "reading"
           Helper.sayGoodBye(args)
         })
@@ -449,18 +444,18 @@ var Tasks = {
     }
   },
   // rss reader
-  rss:function(args){
+  rss : (args) => {
     // will use the request and cheerio to get and parse the html, maybe need phantomjs to help me deal with some dynamic stuff
     
   },
   //angularjs
-  serve:function(args){
+  serve : (args) => {
     var pathname = path.join(__dirname,'../lib/angular/')
     if(Helper.exists(args._[1])){
       pathname = path.join.apply(Helper.pathParser([process.cwd(),args._[1]]))
     }
-    child.exec('open http://localhost:8080/', function(err, stdout, stderr) {})
-    var handler = function(request, response) {
+    child.exec('open http://localhost:8080/', (err, stdout, stderr) => {})
+    var handler = (request, response) => {
     
       var uri = url.parse(request.url).pathname
         , filename = path.join(pathname, uri);
@@ -475,7 +470,7 @@ var Tasks = {
     
       if (fs.statSync(filename).isDirectory()) filename += '/index.html';
     
-      fs.readFile(filename, function(err, file) {
+      fs.readFile(filename, (err, file) => {
         if(err) {        
           response.writeHead(500, {"Content-Type": "text/plain"});
           response.write(err + "\n");
@@ -491,12 +486,12 @@ var Tasks = {
     var io = require('socket.io')(app)
     app.listen(8080);
 
-    io.on('connection', function (socket) {
-      socket.on('exit', function (data) {
+    io.on('connection', (socket) => {
+      socket.on('exit', (data) => {
         //Tasks.todo(data)
         Helper.sayGoodBye(args)
       });
-      socket.on('getTodoList', function (data) {
+      socket.on('getTodoList', (data) => {
         var todoList = Tasks.todo({"json":true})
         socket.emit("todoData",todoList)
       });
@@ -505,19 +500,19 @@ var Tasks = {
     console.log("Static file server running at\n  => http://localhost:8080/\nCTRL + C to shutdown");
   },
   // open leetcode
-  oj:function(args){
-    child.exec('open https://leetcode.com/problemset/algorithms/', function(err, stdout, stderr) {
+  oj : (args) => {
+    child.exec('open https://leetcode.com/problemset/algorithms/', (err, stdout, stderr) => {
       Helper.sayGoodBye(args)
     })
   },
   // npm command
-  npm:function(args){
+  npm : (args) => {
     if(Helper.exists(args._[1]) && args._[1] == "update"){
       var packages = child.execSync('npm outdated').toString()
       packages = packages.split(/\n/).slice(1,packages.length)
       packages.pop()
       var temp = {}
-      packages.map(function(v){
+      packages.map((v) => {
         var re = /[a-zA-Z0-9-_\.]+\s*?/g
         var result = v.match(re)
         temp[result[0]] = {}
@@ -535,7 +530,7 @@ var Tasks = {
     }
   },
   // initial the config file
-  init:function(args){
+  init : (args) => {
     var configuration = {}
     configuration.username = "Tao"
     configuration.summary = true
@@ -555,7 +550,7 @@ var Tasks = {
     }
   },
   // collection of tools
-  tool:function(args){
+  tool : (args) => {
     switch (args._[1]){
       case "pf":
         // print the file structure of current working directory
@@ -570,7 +565,7 @@ var Tasks = {
     }
   },
   // show help
-  help:function(args){
+  help : (args) => {
     var helpDoc = {
       usage:{
         edit:    "baby edit <path-to-file> ...       Edit one file, use vim as the default editor",
