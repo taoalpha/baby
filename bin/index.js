@@ -8,6 +8,8 @@ var url = require("url")
 var fs = require("fs")
 var Trie = require("../lib/trie")
 var http = require('http')
+var Helper = require('./helper')
+
 //var complete = require('../lib/complete')
 //
 
@@ -60,7 +62,7 @@ var Tasks = {
   edit:function(args){
     var initial_lines = 0, end_lines = 0,filepath = ''
     if(args._[1]){
-      filepath = path.join.apply(path,pathParser([process.cwd(),args._[1]]))
+      filepath = path.join.apply(path,Helper.pathParser([process.cwd(),args._[1]]))
     }else{
       filepath = __dirname+'/index.js'
     }
@@ -74,31 +76,31 @@ var Tasks = {
       // no output ?
       child.exec("wc -w "+filepath,function(err,out,stderr){
         end_lines = out.split("/")[0] 
-        var color = Colors.FgGreen + "+ "
+        var color = Helper.Colors.FgGreen + "+ "
         args._[1] = 'coding'
         var data = {}
         data.addCount = end_lines - initial_lines
         data.delCount = 0
         if(end_lines - initial_lines == 0){
-          color = Colors.FgYellow
+          color = Helper.Colors.FgYellow
         }
         if(end_lines - initial_lines < 0){
           data.delCount = initial_lines - end_lines
           data.addCount = 0
-          color = Colors.FgRed
+          color = Helper.Colors.FgRed
         }
         if(end_lines - initial_lines !== 0){
           Tasks.summary(args,data)
         }
-        console.log(`You have made ${color}${ end_lines - initial_lines }${Colors.Reset} changes !`)
-        sayGoodBye() 
+        console.log(`You have made ${color}${ end_lines - initial_lines }${Helper.Colors.Reset} changes !`)
+        Helper.sayGoodBye(args) 
       });
     })
   },
   // idea collection
   idea:function(args){
     var filepath = path.join(__dirname,'../data/.idea.json')
-    var filestatus = fileExists(filepath)
+    var filestatus = Helper.fileExists(filepath)
     // deal with no file and open the server
     if(!filestatus){
       var rl = readline.createInterface({
@@ -113,14 +115,14 @@ var Tasks = {
           data.lastUpdated = new Date()
           data.ideas = []
           fs.writeFileSync(filepath,JSON.stringify(data))
-          sayGoodBye()
+          Helper.sayGoodBye(args)
         }
         rl.close();
       });
     }else{
       // add new idea
       var ideaData = require(filepath)
-      if(exists(args.a)){
+      if(Helper.exists(args.a)){
         var questions = ["Describe your idea: ","Inspired by: ","Under which category(life,work,travel...): ","Tag you to label it: "] 
         // loop to ask all these questions and save all answers 
         var callback = function(ans){
@@ -134,10 +136,10 @@ var Tasks = {
           ideaData.ideas.push(data)
           fs.writeFileSync(filepath,JSON.stringify(ideaData))
         }
-        ask(questions,[],callback)
+        Helper.ask(questions,[],callback)
       }
       // mark the idea with done status
-      if(exists(args.d)){
+      if(Helper.exists(args.d)){
         if(args.d !== true && parseInt(args.d) == parseInt(args.d)){
           ideaData.ideas[args.d].status = "done"
           fs.writeFileSync(filepath,JSON.stringify(ideaData))
@@ -146,7 +148,7 @@ var Tasks = {
         }
       }
       // edit current existing idea with all five questions
-      if(exists(args.e)){
+      if(Helper.exists(args.e)){
         if(args.e !== true && parseInt(args.e) == parseInt(args.e)){
           // initial the question with the answers
           var tData = ideaData.ideas[args.e]
@@ -165,14 +167,14 @@ var Tasks = {
             delete args.e
             Tasks.idea(args)
           }
-          ask(questions,[],callback)
+          Helper.ask(questions,[],callback)
           return
         }else{
           Tasks.help("idea")
         }
       }
       // remove current existing idea 
-      if(exists(args.r)){
+      if(Helper.exists(args.r)){
         if(args.r !== true && parseInt(args.r) == parseInt(args.r)){
           ideaData.ideas.splice(args.r,1)
           fs.writeFileSync(filepath,JSON.stringify(ideaData))
@@ -186,11 +188,11 @@ var Tasks = {
       }else{
         ideaData.ideas.map(function(v,i){
           if(v.status =="done"){
-            console.log(`${Colors.FgGreen}${toLength(i,3)}\u2713 ${toLength(v.status,10)}${v.desc}${Colors.Reset}`)
+            console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)}\u2713 ${Helper.toLength(v.status,10)}${v.desc}${Helper.Colors.Reset}`)
           }else if(v.status == "ongoing"){
-            console.log(`${Colors.FgGreen}${toLength(i,3)} ${toLength(v.status,10)}${v.desc}${Colors.Reset}`)
+            console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)} ${Helper.toLength(v.status,10)}${v.desc}${Helper.Colors.Reset}`)
           }else{
-            console.log(`${Colors.FgGreen}${toLength(i,3)} ${toLength(v.status,10)}${v.desc}${Colors.Reset}`)
+            console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)} ${Helper.toLength(v.status,10)}${v.desc}${Helper.Colors.Reset}`)
           }
         })
       }
@@ -199,7 +201,7 @@ var Tasks = {
   // todo task
   todo:function(args){
     var filepath = path.join(__dirname,'../data/.todo.json')
-    var filestatus = fileExists(filepath)
+    var filestatus = Helper.fileExists(filepath)
     // deal with no file and open the server
     if(!filestatus){
       var rl = readline.createInterface({
@@ -215,7 +217,7 @@ var Tasks = {
           data.items = []
           data.doneItems = []
           fs.writeFileSync(filepath,JSON.stringify(data))
-          sayGoodBye()
+          Helper.sayGoodBye(args)
         }
         rl.close();
       });
@@ -226,7 +228,7 @@ var Tasks = {
       }
       //JSON.parse(fs.readFileSync(filepath))
       var todoLists = content.items
-      if(exists(args.a)){
+      if(Helper.exists(args.a)){
         if(args.a  && args.a !== true){
           var newTask = {}
           newTask.task = args.a
@@ -240,7 +242,7 @@ var Tasks = {
           Tasks.help("todo")
         }
       }
-      if(exists(args.e)){
+      if(Helper.exists(args.e)){
         if(args.e !== true && parseInt(args.e) == parseInt(args.e)){
           todoLists[args.e].task = args._[1]
         }else{
@@ -248,7 +250,7 @@ var Tasks = {
           Tasks.help("todo")
         }
       }
-      if(exists(args.d)){
+      if(Helper.exists(args.d)){
         if(args.d !== true && parseInt(args.d) == parseInt(args.d)){
           todoLists[parseInt(args.d)].status = "done"
           todoLists[parseInt(args.d)].doneTime = new Date()+''
@@ -258,7 +260,7 @@ var Tasks = {
           }else{
             content.doneItems.map(function(v,i){
               if(v.status == "done"){
-                console.log(`${Colors.FgGreen}${toLength(i,3)}\u2713 ${toLength(v.status,10)}${v.task}${Colors.Reset}`)
+                console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)}\u2713 ${Helper.toLength(v.status,10)}${v.task}${Helper.Colors.Reset}`)
               }
             })
           }
@@ -266,7 +268,7 @@ var Tasks = {
           return
         }
       }
-      if(exists(args.u)){
+      if(Helper.exists(args.u)){
         if(args.u !== true && parseInt(args.u) == parseInt(args.u)){
           todoLists[args.u].status = "ongoing"
           todoLists[parseInt(args.u)].doneTime = ''
@@ -275,7 +277,7 @@ var Tasks = {
           Tasks.help("todo")
         }
       }
-      if(exists(args.clean)){
+      if(Helper.exists(args.clean)){
         // clean the done tasks
         for(var i =0;i<content.items.length;i++){
           if(content.items[i].status == "done"){
@@ -284,11 +286,11 @@ var Tasks = {
           }
         }
       }
-      if(exists(args.clear)){
+      if(Helper.exists(args.clear)){
         content.items = []
         content.total = 0 
       }
-      if(exists(args.r)){
+      if(Helper.exists(args.r)){
         if(args.r !== true && parseInt(args.r) == parseInt(args.r)){
           todoLists.splice(parseInt(args.r),1)
         }
@@ -300,11 +302,11 @@ var Tasks = {
       }else{
         content.items.map(function(v,i){
           if(v.status == "done"){
-            console.log(`${Colors.FgGreen}${toLength(i,3)}\u2713 ${toLength(v.status,10)}${v.task}${Colors.Reset}`)
+            console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)}\u2713 ${Helper.toLength(v.status,10)}${v.task}${Helper.Colors.Reset}`)
           }else if(v.status == "ongoing"){
-            console.log(`${Colors.FgRed}${toLength(i,5)}${toLength(v.status,10)}${v.task}${Colors.Reset}`)
+            console.log(`${Helper.Colors.FgRed}${Helper.toLength(i,5)}${Helper.toLength(v.status,10)}${v.task}${Helper.Colors.Reset}`)
           }else if(v.status == "obsolete"){
-            console.log(`${Colors.FgYellow}${toLength(i,5)}${toLength(v.status,10)}${v.task}${Colors.Reset}`)
+            console.log(`${Helper.Colors.FgYellow}${Helper.toLength(i,5)}${Helper.toLength(v.status,10)}${v.task}${Helper.Colors.Reset}`)
           }
         })
       }
@@ -322,13 +324,13 @@ var Tasks = {
         process.exit();
       }
     });
-    setInterval(praiseMe,2000)
+    setInterval(Helper.praiseMe,2000)
   },
   // gloabl statistics
   summary:function(args,data){
     // need a config file
     var filepath = path.join(__dirname,'../data/.gSummary.json')
-    var filestatus = fileExists(filepath)
+    var filestatus = Helper.fileExists(filepath)
     if(!filestatus){
       var rl = readline.createInterface({
         input: process.stdin,
@@ -343,7 +345,7 @@ var Tasks = {
           data.coding.delCount = 0
           data.coding.days = {}
           fs.writeFileSync(filepath,JSON.stringify(data))
-          sayGoodBye()
+          Helper.sayGoodBye(args)
         }
         rl.close();
       });
@@ -378,8 +380,8 @@ var Tasks = {
         summaryReport.coding.days[today].delCount += data.delCount
         fs.writeFileSync(filepath,JSON.stringify(summaryReport))
       }else{
-        console.log(`You have made ${Colors.FgGreen} + ${summaryReport.coding.addCount} ${Colors.Reset} insertions and ${Colors.FgRed} - ${summaryReport.coding.delCount} ${Colors.Reset} deletions!`)
-        console.log(`${Colors.FgYellow}Special for today:${Colors.Reset} you have made ${Colors.FgGreen} + ${summaryReport.coding.days[today].addCount} ${Colors.Reset} insertions and ${Colors.FgRed} - ${summaryReport.coding.days[today].delCount} ${Colors.Reset} deletions!`)
+        console.log(`You have made ${Helper.Colors.FgGreen} + ${summaryReport.coding.addCount} ${Helper.Colors.Reset} insertions and ${Helper.Colors.FgRed} - ${summaryReport.coding.delCount} ${Helper.Colors.Reset} deletions!`)
+        console.log(`${Helper.Colors.FgYellow}Special for today:${Helper.Colors.Reset} you have made ${Helper.Colors.FgGreen} + ${summaryReport.coding.days[today].addCount} ${Helper.Colors.Reset} insertions and ${Helper.Colors.FgRed} - ${summaryReport.coding.days[today].delCount} ${Helper.Colors.Reset} deletions!`)
       }
     }
   },
@@ -401,7 +403,7 @@ var Tasks = {
       stdio:'inherit'
     });
     ssh.on('close',function(code){
-      sayGoodBye()
+      Helper.sayGoodBye(args)
     })
   },
   // search cdnjs
@@ -418,7 +420,7 @@ var Tasks = {
       //}
       //fs.writeFileSync("../data/trie.json",JSON.stringify(tree))
       tree.autocomplete(args._[1]).slice(0,10).map(function(v){
-        var fixLenghtItem = toLength(v,30)
+        var fixLenghtItem = Helper.toLength(v,30)
         console.log(`${fixLenghtItem}${cdnjs[v]}`)
       })
 
@@ -440,7 +442,8 @@ var Tasks = {
           stdio:'inherit'
         });
         book.on('close',function(code){
-          sayGoodBye("reading")
+          args.action = "reading"
+          Helper.sayGoodBye(args)
         })
       })
     }
@@ -453,8 +456,8 @@ var Tasks = {
   //angularjs
   serve:function(args){
     var pathname = path.join(__dirname,'../lib/angular/')
-    if(exists(args._[1])){
-      pathname = path.join.apply(pathParser([process.cwd(),args._[1]]))
+    if(Helper.exists(args._[1])){
+      pathname = path.join.apply(Helper.pathParser([process.cwd(),args._[1]]))
     }
     child.exec('open http://localhost:8080/', function(err, stdout, stderr) {})
     var handler = function(request, response) {
@@ -462,7 +465,7 @@ var Tasks = {
       var uri = url.parse(request.url).pathname
         , filename = path.join(pathname, uri);
       
-      var filestatus = fileExists(filename,'dir')
+      var filestatus = Helper.fileExists(filename,'dir')
       if(!filestatus) {
         response.writeHead(404, {"Content-Type": "text/plain"});
         response.write("404 Not Found\n");
@@ -491,7 +494,7 @@ var Tasks = {
     io.on('connection', function (socket) {
       socket.on('exit', function (data) {
         //Tasks.todo(data)
-        sayGoodBye()
+        Helper.sayGoodBye(args)
       });
       socket.on('getTodoList', function (data) {
         var todoList = Tasks.todo({"json":true})
@@ -504,12 +507,12 @@ var Tasks = {
   // open leetcode
   oj:function(args){
     child.exec('open https://leetcode.com/problemset/algorithms/', function(err, stdout, stderr) {
-      sayGoodBye()
+      Helper.sayGoodBye(args)
     })
   },
   // npm command
   npm:function(args){
-    if(exists(args._[1]) && args._[1] == "update"){
+    if(Helper.exists(args._[1]) && args._[1] == "update"){
       var packages = child.execSync('npm outdated').toString()
       packages = packages.split(/\n/).slice(1,packages.length)
       packages.pop()
@@ -525,9 +528,9 @@ var Tasks = {
       packages = temp
       delete temp
       if(args.latest){
-        npmHelper(packages)
+        Helper.npmHelper(packages)
       }else{
-        npmHelper(packages,'wanted')
+        Helper.npmHelper(packages,'wanted')
       }
     }
   },
@@ -538,7 +541,7 @@ var Tasks = {
     configuration.summary = true
     configuration.todoFilePath = ''
     var filepath = path.join(__dirname,'.config.json')
-    if(!fileExists(filepath)){
+    if(!Helper.fileExists(filepath)){
       console.log("Initialize with default configuration.")
       fs.writeFileSync(filepath,JSON.stringify(configuration))
     }else if(args.e){
@@ -553,8 +556,17 @@ var Tasks = {
   },
   // collection of tools
   tool:function(args){
-    if(args._[1] == "pf"){
-      printFiles(process.cwd())
+    switch (args._[1]){
+      case "pf":
+        // print the file structure of current working directory
+        Helper.printFiles(process.cwd())
+        break;
+      case "rp":
+        // find repeated part of your code with similarity of string
+        Helper.calculateRepeat(args._[2])
+        break;
+      default:
+        Tasks.help("todo")
     }
   },
   // show help
@@ -603,149 +615,6 @@ var Tasks = {
   }
 }
 
-// Praise me ^_^
-function praiseMe(){
-  var adj = ["awesome","fantastic","wonderful","fabulous","outstanding","legendary","great","briliant","talented","amazing"]
-  console.log(`${Colors[pickRandomProperty(Colors)]}Tao, You are truly ${adj[Math.floor(Math.random()*adj.length)]}!${Colors.Reset}`)
-}
-
-// Colors 
-var Colors = {
-Reset : "\x1b[0m"
-,FgRed : "\x1b[31m"
-,FgGreen : "\x1b[32m"
-,FgYellow : "\x1b[33m"
-,FgBlue : "\x1b[34m"
-,FgMagenta : "\x1b[35m"
-,FgCyan : "\x1b[36m"
-,FgWhite : "\x1b[37m"
-,BgBlack : "\x1b[40m"
-,BgRed : "\x1b[41m"
-,BgGreen : "\x1b[42m"
-,BgYellow : "\x1b[43m"
-,BgBlue : "\x1b[44m"
-,BgMagenta : "\x1b[45m"
-,BgCyan : "\x1b[46m"
-}
-
-// helper functions for picking random property from an object
-function pickRandomProperty(obj) {
-    var result;
-    var count = 0;
-    for (var prop in obj)
-        if (Math.random() < 1/++count)
-           result = prop;
-    return result;
-}
-
-// say good bye
-
-function sayGoodBye(action) {
-  action = action || "coding"
-  console.log(`${Colors.FgGreen}Happy ${action}, ${userArgs.CONFIG.username || 'tao'} !${Colors.Reset}`)
-}
-
-// check whether variable or property exist or not
-function exists(val){
-  return typeof val !== "undefined"
-}
-
-// Fix length for string
-function toLength(val,len){
-  var val = val+""
-  return (val+(new Array(val.length*10)).join(" ")).slice(0,len)
-}
-
-// check whether file or directory exists or not
-function fileExists(filePath,type)
-{
-  if(type=="dir"){
-    try{
-      return fs.statSync(filePath).isDirectory();
-    }catch (err){
-      return false;
-    }
-  }
-  try{
-    return fs.statSync(filePath).isFile();
-  }catch (err){
-    return false;
-  }
-}
-
-// path parser
-
-function pathParser(args){
-  var oLen = args.length
-  for(var i = 0;i<oLen;i++){
-    if(args[i][0] === '~' || args[i][0] === '/'){
-      var cutLen = args.splice(0,i).length
-      oLen -= cutLen
-      i -= cutLen
-    }
-  }
-  return args
-}
-
-// helper for npm
-function npmHelper(packages,flag){
-
-  if(Object.keys(packages).length == 0){
-    sayGoodBye()
-    return
-  }else{
-    var item = Object.keys(packages)[0]
-    var version = "latest"
-    if(flag == "wanted"){
-      version = packages[item].wanted
-    }
-    console.log('Installing '+item)
-    var single = child.spawn('npm',['install',item+'@'+version,'--save'],{
-      stdio:"inherit"
-    })
-    single.on('close',function(){
-      delete packages[item]
-      npmHelper(packages)
-    })
-  }
-}
-
-
-// ask for questions
-var ask = function(q,a,callback){
-  if(q.length==0){
-    callback(a)
-    return
-  }
-  var rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-  var qt = q.shift()
-  rl.question(qt, function(answer) {
-    a.push(answer)
-    rl.close();
-    ask(q,a,callback)
-  });
-}
-
-// print files under a specific path
-var printFiles = function(pathname,step){
-  var step = step || 1
-  //console.log(toLength('====================',step*2)+pathname)
-  var fileList = fs.readdirSync(pathname)
-  //,function(err,list){
-  if(!fileList.length) {console.log("no files");return}
-  for(var v in fileList){
-    console.log(toLength('----------------------------',step*3)+fileList[v])
-    var newpath = path.join(pathname,fileList[v])
-    if(fileExists(newpath,'dir')){
-      printFiles(newpath,step+1)
-    }
-  }
-}
-
-
 // assign tasks according to the args
 
 var shortName = {
@@ -756,6 +625,7 @@ var shortName = {
   p:"praise",
   kuawo:"praise",
   t:"todo",
+  i:"idea",
   ss:"ssh"
 }
 
@@ -764,7 +634,8 @@ var shortName = {
 // like Enable the summary report
 // or Customize the path of the data file
 var configFile = path.join(__dirname,'.config.json')
-if(fileExists(configFile)){
+userArgs.CONFIG = {}
+if(Helper.fileExists(configFile)){
   userArgs.CONFIG = require(configFile)
 }
 
@@ -773,7 +644,7 @@ if(userArgs._[0]){
     Tasks[userArgs._[0]](userArgs)
   }else if(shortName.hasOwnProperty(userArgs._[0])){
     Tasks[shortName[userArgs._[0]]](userArgs)
-  }else if(fileExists(userArgs._[0])){
+  }else if(Helper.fileExists(userArgs._[0])){
     userArgs._[1] = userArgs._[0]
     Tasks.edit(userArgs)
   }else{
