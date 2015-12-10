@@ -8,39 +8,62 @@ var url = require("url")
 var fs = require("fs")
 var Trie = require("../lib/trie")
 var http = require('http')
+var omelette = require("omelette");
 var Helper = require('./helper')
 
-//var complete = require('../lib/complete')
 
 // agreement on this project
-// will use spinal-case for variables
+// will use snake_case or spinal-case for variables
 // will use camelCase for functions
-// will use CamelCase for class or global object
-// will use snake_case only for private variables
+// will use CamelCase for class or global objec
+
+var complete = omelette("baby <action> <option> <value>");
+
+complete.on("action", function() {
+  var list = fs.readdirSync(".")
+  list = list.concat(["edit", "todo", "ssh","cdn","summary","read","serve","tool","npm","praise","oj","help","init"])
+  this.reply(list)
+});
+
+complete.on("option", function(action) {
+  switch (action){
+    case "todo":
+      this.reply(['-a','-e','-d','-u','--clean'])
+      break
+    case "idea":
+      this.reply(['-a','-e'])
+      break
+    case "ssh":
+      this.reply(['-n'])
+      break
+    case "tool":
+      this.reply(["pf"])
+      break
+    case "npm":
+      this.reply(["install"])
+      break
+    case "cdn":
+      var cdnjs = require("../data/cdnjs.json") 
+      this.reply(Object.keys(cdnjs))
+      break
+    default:
+      this.reply(fs.readdirSync("."))
+  }
+});
+
+complete.on("value",function(option){
+  switch (option){
+    case "-n":
+      this.reply(["groupfinder","aws","gary","weirss"])
+      break
+  }
+})
+
+// Initialize the omelette.
+complete.init()
 
 // get arguments
 var userArgs = parseArgs(process.argv.slice(2))
-
-//complete({
-//  program: 'baby',
-//  // Commands
-//  commands: {
-//    'sleep': function(words, prev, cur) {
-//      complete.output(cur, ['-t']);
-//    },
-//    'edit': {
-//      'hi': function(words, prev, cur) {
-//        complete.echo('next');
-//      }
-//    }
-//  },
-//  options: {
-//    '--help': {},
-//    '-h': {},
-//    '--version': {},
-//    '-v': {}
-//  }
-//});
 
 var Tasks = {
   // put the display to sleep
@@ -645,6 +668,7 @@ if(userArgs._[0]){
   }else{
     Tasks["help"](userArgs)
   }
-}else{
-  Tasks["help"](userArgs)
 }
+//else{
+//  Tasks["help"](userArgs)
+//}
