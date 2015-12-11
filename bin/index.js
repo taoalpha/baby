@@ -137,7 +137,7 @@ var Tasks = {
           data.creationTime = new Date()
           data.lastUpdated = new Date()
           data.ideas = []
-          fs.writeFileSync(filepath,JSON.stringify(data))
+          Helper.writeToFile(filepath,data)
           Helper.sayGoodBye(args)
         }
         rl.close();
@@ -157,7 +157,7 @@ var Tasks = {
           data.tags = ans[3].split(",")
           data.status = "backlog"
           ideaData.ideas.push(data)
-          fs.writeFileSync(filepath,JSON.stringify(ideaData))
+          Helper.writeToFile(filepath,ideaData)
         }
         Helper.ask(questions,[],callback)
       }
@@ -165,7 +165,7 @@ var Tasks = {
       if(Helper.exists(args.d)){
         if(args.d !== true && parseInt(args.d) == parseInt(args.d)){
           ideaData.ideas[args.d].status = "done"
-          fs.writeFileSync(filepath,JSON.stringify(ideaData))
+          Helper.writeToFile(filepath,ideaData)
         }else{
           Tasks.help("idea")
         }
@@ -186,7 +186,7 @@ var Tasks = {
             data.tags = ans[3] || ans[3].split(",") || data.tags
             data.status = ans[4] || data.status
             ideaData.ideas[args.e] = data
-            fs.writeFileSync(filepath,JSON.stringify(ideaData))
+            Helper.writeToFile(filepath,ideaData)
             delete args.e
             Tasks.idea(args)
           }
@@ -200,7 +200,7 @@ var Tasks = {
       if(Helper.exists(args.r)){
         if(args.r !== true && parseInt(args.r) == parseInt(args.r)){
           ideaData.ideas.splice(args.r,1)
-          fs.writeFileSync(filepath,JSON.stringify(ideaData))
+          Helper.writeToFile(filepath,ideaData)
         }else{
           Tasks.help("idea")
         }
@@ -239,7 +239,7 @@ var Tasks = {
           data.lastUpdated = new Date()
           data.items = []
           data.doneItems = []
-          fs.writeFileSync(filepath,JSON.stringify(data))
+          Helper.writeToFile(filepath,data)
           Helper.sayGoodBye(args)
         }
         rl.close();
@@ -333,7 +333,7 @@ var Tasks = {
           }
         })
       }
-      fs.writeFileSync(filepath,JSON.stringify(content))
+      Helper.writeToFile(filepath,content)
     }
   },
   // positive words!
@@ -367,7 +367,7 @@ var Tasks = {
           data.coding.addCount = 0
           data.coding.delCount = 0
           data.coding.days = {}
-          fs.writeFileSync(filepath,JSON.stringify(data))
+          Helper.writeToFile(filepath,data)
           Helper.sayGoodBye(args)
         }
         rl.close();
@@ -401,7 +401,7 @@ var Tasks = {
         summaryReport.coding.delCount += data.delCount
         summaryReport.coding.days[today].addCount += data.addCount
         summaryReport.coding.days[today].delCount += data.delCount
-        fs.writeFileSync(filepath,JSON.stringify(summaryReport))
+        Helper.writeToFile(filepath,summaryReport)
       }else{
         console.log(`You have made ${Helper.Colors.FgGreen} + ${summaryReport.coding.addCount} ${Helper.Colors.Reset} insertions and ${Helper.Colors.FgRed} - ${summaryReport.coding.delCount} ${Helper.Colors.Reset} deletions!`)
         console.log(`${Helper.Colors.FgYellow}Special for today:${Helper.Colors.Reset} you have made ${Helper.Colors.FgGreen} + ${summaryReport.coding.days[today].addCount} ${Helper.Colors.Reset} insertions and ${Helper.Colors.FgRed} - ${summaryReport.coding.days[today].delCount} ${Helper.Colors.Reset} deletions!`)
@@ -566,7 +566,7 @@ var Tasks = {
     var filepath = path.join(__dirname,'.config.json')
     if(!Helper.fileExists(filepath)){
       console.log("Initialize with default configuration.")
-      fs.writeFileSync(filepath,JSON.stringify(configuration))
+      Helper.writeToFile(filepath,configuration)
     }else if(args.e){
       args._[1] = filepath
       Tasks.edit(args)

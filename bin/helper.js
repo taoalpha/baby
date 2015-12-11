@@ -114,6 +114,9 @@ var Helper = {
         Helper.printFiles(newpath,step+1)
       }
     }
+  },
+  writeToFile : (filepath,data) => {
+    fs.writeFileSync(filepath,JSON.stringify(data))
   }
 }
 
