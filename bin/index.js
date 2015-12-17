@@ -2,7 +2,6 @@
 // modules from third party
 var parseArgs = require('minimist')
 var readline = require('readline')
-var child = require('child_process')
 var path = require("path")
 var url = require("url")
 var fs = require("fs")
@@ -71,15 +70,47 @@ complete.on("value",function(option){
 var userArgs = parseArgs(process.argv.slice(2))
 
 var Tasks = {
-  // put the display to sleep
-  sleep : (args) => {
-    var delay = args._[1] || args["t"] || args["time"] || 2
-    console.log("will sleep after "+delay+" seconds, happy rest!")
-    setTimeout(() => {
-     child.exec('system_profiler SPUSBDataType | grep TaoAlpha', (err, stdout, stderr) => {
-        child.exec('pmset displaysleepnow')
+  // initial the config file
+  init : (args) => {
+    var configuration = {}
+    configuration.username = "Tao"
+    configuration.summary = true
+    configuration.todoFilePath = ''
+    var filepath = path.join(__dirname,'.config.json')
+    if(!Helper.fileExists(filepath)){
+      console.log("Initialize with default configuration.")
+      Helper.writeToFile(filepath,configuration)
+    }else if(args.e){
+      args._[1] = filepath
+      Tasks.edit(args)
+    }else{
+      var config = JSON.parse(fs.readFileSync(filepath))
+      console.log("You already have one configuration file here: "+filepath)
+      console.log(config)
+      console.log("Use 'baby init -e' to edit your configuration file.")
+    }
+  },
+  // search cdnjs
+  cdn : (args) => {
+    if(args._[1]){
+      var cdnjs = require("../data/cdnjs.json") 
+      var trieData = require("../data/trie.json") 
+      var count = 0
+      var tree = new Trie()
+      tree.root = trieData.root
+      // build the trie tree at the first time
+      //for(var item in cdnjs){
+      //  tree.insert(item)
+      //}
+      //fs.writeFileSync("../data/trie.json",JSON.stringify(tree))
+      tree.autocomplete(args._[1]).slice(0,10).map((v) => {
+        var fixLenghtItem = Helper.toLength(v,30)
+        console.log(`${fixLenghtItem}${cdnjs[v]}`)
       })
-    },delay*1000)
+
+    }else{
+      Tasks.help("cdn")
+    }
   },
   // edit some file or this script
   edit : (args) => {
@@ -89,36 +120,45 @@ var Tasks = {
     }else{
       filepath = __dirname+'/index.js'
     }
-    child.exec("wc -w "+filepath,(err,out,stderr) => {
-      initial_lines = out.split("/")[0]
-    })
-    var vim = child.spawn('vim',[filepath],{
-      stdio:'inherit'
-    })
+    // get the initial number of lines
+    Helper.exec("wc -l "+filepath,(out) => {initial_lines = out.split("/")[0]})
+    var vim = Helper.spawn('vim',[filepath])
     vim.on('close',(code) => {
-      // no output ?
-      child.exec("wc -w "+filepath,(err,out,stderr) => {
-        end_lines = out.split("/")[0] 
-        var color = Helper.Colors.FgGreen + "+ "
-        args._[1] = 'coding'
-        var data = {}
-        data.addCount = end_lines - initial_lines
-        data.delCount = 0
-        if(end_lines - initial_lines == 0){
-          color = Helper.Colors.FgYellow
+      Helper.exec("wc -l "+filepath,
+        (out) => {
+          end_lines = out.split("/")[0] 
+          var color = Helper.Colors.FgGreen + "+ "
+          args._[1] = 'coding'
+          var data = {}
+          data.addCount = end_lines - initial_lines
+          data.delCount = 0
+          if(end_lines - initial_lines == 0){
+            color = Helper.Colors.FgYellow
+          }
+          if(end_lines - initial_lines < 0){
+            data.delCount = initial_lines - end_lines
+            data.addCount = 0
+            color = Helper.Colors.FgRed
+          }
+          if(end_lines - initial_lines !== 0){
+            Tasks.summary(args,data)
+          }
+          console.log(`You have made ${color}${ end_lines - initial_lines }${Helper.Colors.Reset} changes !`)
+          Helper.sayGoodBye(args) 
         }
-        if(end_lines - initial_lines < 0){
-          data.delCount = initial_lines - end_lines
-          data.addCount = 0
-          color = Helper.Colors.FgRed
-        }
-        if(end_lines - initial_lines !== 0){
-          Tasks.summary(args,data)
-        }
-        console.log(`You have made ${color}${ end_lines - initial_lines }${Helper.Colors.Reset} changes !`)
-        Helper.sayGoodBye(args) 
-      });
+      );
     })
+  },
+  // support git short name
+  git : (args) => {
+    if(Helper.exists(args._[1])){
+      switch (args._[1]) {
+        case "blog":
+          break
+        case "normal":
+          break
+      }
+    }
   },
   // idea collection
   idea : (args) => {
@@ -220,6 +260,210 @@ var Tasks = {
         })
       }
     } 
+  },
+  // npm command
+  npm : (args) => {
+    if(Helper.exists(args._[1]) && args._[1] == "update"){
+      var packages = Helper.execSync('npm outdated').toString()
+      packages = packages.split(/\n/).slice(1,packages.length)
+      packages.pop()
+      var temp = {}
+      packages.map((v) => {
+        var re = /[a-zA-Z0-9-_\.]+\s*?/g
+        var result = v.match(re)
+        temp[result[0]] = {}
+        temp[result[0]].current = result[1]
+        temp[result[0]].wanted = result[2]
+        temp[result[0]].latest = result[3]
+      })
+      packages = temp
+      delete temp
+      if(args.latest){
+        Helper.npmHelper(packages)
+      }else{
+        Helper.npmHelper(packages,'wanted')
+      }
+    }
+  },
+  // open leetcode
+  oj : (args) => {
+    Helper.exec('open https://leetcode.com/problemset/algorithms/', (out) => {
+      Helper.sayGoodBye(args)
+    })
+  },
+  // positive words!
+  praise : (args) => {
+    var stdin = process.stdin;
+    stdin.setRawMode( true );
+    //stdin.resume();
+    stdin.setEncoding( 'utf8' );
+    stdin.on( 'data', ( key ) => {
+      if ( key === 'c' || key == '\u0003' ) {
+        process.exit();
+      }
+    });
+    setInterval(Helper.praiseMe,2000)
+  },
+  // random book from my reading list
+  // Should support open novels?
+  read : (args) => {
+    var filepath = ''
+    var book_dir = process.env.HOME+"/readings"
+    if(args._[1]){
+      filepath = [args._[1]]
+    }else{
+      var books = fs.readdir(book_dir,(err,list) => {
+        if (err) return err;
+        filepath = [book_dir + "/" + list[Math.floor(Math.random()*list.length)]]
+        var book = Helper.spawn('open',filepath)
+        book.on('close',(code) => {
+          args.action = "reading"
+          Helper.sayGoodBye(args)
+        })
+      })
+    }
+  }, 
+  // rss reader
+  rss : (args) => {
+    // will use the request and cheerio to get and parse the html, maybe need phantomjs to help me deal with some dynamic stuff
+  },
+  // create a http server with specific directory
+  serve : (args) => {
+    var pathname = path.join(__dirname,'../lib/angular/')
+    if(Helper.exists(args._[1])){
+      pathname = path.join.apply(Helper.pathParser([process.cwd(),args._[1]]))
+    }
+    Helper.exec('open http://localhost:8080/')
+    var handler = (request, response) => {
+    
+      var uri = url.parse(request.url).pathname
+        , filename = path.join(pathname, uri);
+      
+      var filestatus = Helper.fileExists(filename,'dir')
+      if(!filestatus) {
+        response.writeHead(404, {"Content-Type": "text/plain"});
+        response.write("404 Not Found\n");
+        response.end();
+        return;
+      }
+    
+      if (fs.statSync(filename).isDirectory()) filename += '/index.html';
+    
+      fs.readFile(filename, (err, file) => {
+        if(err) {        
+          response.writeHead(500, {"Content-Type": "text/plain"});
+          response.write(err + "\n");
+          response.end();
+          return;
+        }
+    
+        response.writeHead(200);
+        response.end(file);
+      });
+    }
+    var app = http.createServer(handler)
+    var io = require('socket.io')(app)
+    app.listen(8080);
+
+    io.on('connection', (socket) => {
+      socket.on('exit', (data) => {
+        //Tasks.todo(data)
+        Helper.sayGoodBye(args)
+      });
+      socket.on('getTodoList', (data) => {
+        var todoList = Tasks.todo({"json":true})
+        socket.emit("todoData",todoList)
+      });
+    });
+    
+    console.log("Static file server running at\n  => http://localhost:8080/\nCTRL + C to shutdown");
+  },
+  // put the display to sleep
+  sleep : (args) => {
+    var delay = args._[1] || args["t"] || args["time"] || 2
+    console.log("will sleep after "+delay+" seconds, happy rest!")
+    setTimeout(() => {
+      // Helper.exec('system_profiler SPUSBDataType | grep TaoAlpha',Helper.exec('pmset displaysleepnow'))
+      Helper.exec('pmset displaysleepnow')
+    },delay*1000)
+  },
+  // connect ssh
+  ssh : (args) => {
+    var presetaddresses = {
+      weirss : ["root@weirss.me"]
+      ,gary : ["gary@zzgary.info","-p","2120"]
+      ,aws : ["-i",process.env.HOME+"/temp/taoalpha.pem","ubuntu@52.32.254.98"]
+      ,groupfinder : ["-i",process.env.HOME+"/temp/aws.pem","ubuntu@52.26.51.6"]
+    }
+    var address = ""
+    if(args._[1]){
+      address = [args._[1]]
+    }else if(args.n){
+      address = presetaddresses[args.n]
+    }
+    var ssh = Helper.spawn('ssh',address)
+    ssh.on('close',(code) => {
+      Helper.sayGoodBye(args)
+    })
+  },
+  // gloabl statistics
+  summary : (args,data) => {
+    // need a config file
+    var filepath = path.join(__dirname,'../data/.gSummary.json')
+    var filestatus = Helper.fileExists(filepath)
+    if(!filestatus){
+      var rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+      });
+      rl.question("Will initialize the summary report (Y/n) ? ", (answer) => {
+        if(answer.toLowerCase() == "y"){
+          var data = {}
+          data.total= 0
+          data.coding = {}
+          data.coding.addCount = 0
+          data.coding.delCount = 0
+          data.coding.days = {}
+          Helper.writeToFile(filepath,data)
+          Helper.sayGoodBye(args)
+        }
+        rl.close();
+      });
+    }else{
+      var summaryReport = require(filepath)
+      var today = new Date().toLocaleDateString()
+      // clean the log and keep records up to 30 days || config.LOGDAYS
+      var logdays = args.CONFIG.logdays || 30
+      if(Object.keys(summaryReport.coding.days).length > logdays){
+        var prev = new Date((new Date()).setDate((new Date()).getDate()-logdays)).toLocaleDateString()
+        for(var i in summaryReport.coding.days){
+          if(i<prev){
+            delete summaryReport.coding.days[i]
+          }
+        }
+      }
+      if(!summaryReport.coding.days[today]){
+        summaryReport.coding.days[today] = {}
+        summaryReport.coding.days[today].addCount = 0
+        summaryReport.coding.days[today].delCount = 0
+      }
+      // show or write the records to the data
+      if(args._[1] == "coding" && data){
+        if(!summaryReport.coding.days[today]){
+          summaryReport.coding.days[today] = {}
+          summaryReport.coding.days[today].addCount = data.addCount
+          summaryReport.coding.days[today].delCount = data.delCount
+        }
+        summaryReport.coding.addCount += data.addCount
+        summaryReport.coding.delCount += data.delCount
+        summaryReport.coding.days[today].addCount += data.addCount
+        summaryReport.coding.days[today].delCount += data.delCount
+        Helper.writeToFile(filepath,summaryReport)
+      }else{
+        console.log(`You have made ${Helper.Colors.FgGreen} + ${summaryReport.coding.addCount} ${Helper.Colors.Reset} insertions and ${Helper.Colors.FgRed} - ${summaryReport.coding.delCount} ${Helper.Colors.Reset} deletions!`)
+        console.log(`${Helper.Colors.FgYellow}Special for today:${Helper.Colors.Reset} you have made ${Helper.Colors.FgGreen} + ${summaryReport.coding.days[today].addCount} ${Helper.Colors.Reset} insertions and ${Helper.Colors.FgRed} - ${summaryReport.coding.days[today].delCount} ${Helper.Colors.Reset} deletions!`)
+      }
+    }
   },
   // todo task
   todo : (args) => {
@@ -336,247 +580,6 @@ var Tasks = {
       Helper.writeToFile(filepath,content)
     }
   },
-  // positive words!
-  praise : (args) => {
-    var stdin = process.stdin;
-    stdin.setRawMode( true );
-    //stdin.resume();
-    stdin.setEncoding( 'utf8' );
-    stdin.on( 'data', ( key ) => {
-      if ( key === 'c' || key == '\u0003' ) {
-        process.exit();
-      }
-    });
-    setInterval(Helper.praiseMe,2000)
-  },
-  // gloabl statistics
-  summary : (args,data) => {
-    // need a config file
-    var filepath = path.join(__dirname,'../data/.gSummary.json')
-    var filestatus = Helper.fileExists(filepath)
-    if(!filestatus){
-      var rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-      });
-      rl.question("Will initialize the summary report (Y/n) ? ", (answer) => {
-        if(answer.toLowerCase() == "y"){
-          var data = {}
-          data.total= 0
-          data.coding = {}
-          data.coding.addCount = 0
-          data.coding.delCount = 0
-          data.coding.days = {}
-          Helper.writeToFile(filepath,data)
-          Helper.sayGoodBye(args)
-        }
-        rl.close();
-      });
-    }else{
-      var summaryReport = require(filepath)
-      var today = new Date().toLocaleDateString()
-      // clean the log and keep records up to 30 days || config.LOGDAYS
-      var logdays = args.CONFIG.logdays || 30
-      if(Object.keys(summaryReport.coding.days).length > logdays){
-        var prev = new Date((new Date()).setDate((new Date()).getDate()-logdays)).toLocaleDateString()
-        for(var i in summaryReport.coding.days){
-          if(i<prev){
-            delete summaryReport.coding.days[i]
-          }
-        }
-      }
-      if(!summaryReport.coding.days[today]){
-        summaryReport.coding.days[today] = {}
-        summaryReport.coding.days[today].addCount = 0
-        summaryReport.coding.days[today].delCount = 0
-      }
-      // show or write the records to the data
-      if(args._[1] == "coding" && data){
-        if(!summaryReport.coding.days[today]){
-          summaryReport.coding.days[today] = {}
-          summaryReport.coding.days[today].addCount = data.addCount
-          summaryReport.coding.days[today].delCount = data.delCount
-        }
-        summaryReport.coding.addCount += data.addCount
-        summaryReport.coding.delCount += data.delCount
-        summaryReport.coding.days[today].addCount += data.addCount
-        summaryReport.coding.days[today].delCount += data.delCount
-        Helper.writeToFile(filepath,summaryReport)
-      }else{
-        console.log(`You have made ${Helper.Colors.FgGreen} + ${summaryReport.coding.addCount} ${Helper.Colors.Reset} insertions and ${Helper.Colors.FgRed} - ${summaryReport.coding.delCount} ${Helper.Colors.Reset} deletions!`)
-        console.log(`${Helper.Colors.FgYellow}Special for today:${Helper.Colors.Reset} you have made ${Helper.Colors.FgGreen} + ${summaryReport.coding.days[today].addCount} ${Helper.Colors.Reset} insertions and ${Helper.Colors.FgRed} - ${summaryReport.coding.days[today].delCount} ${Helper.Colors.Reset} deletions!`)
-      }
-    }
-  },
-  // connect ssh
-  ssh : (args) => {
-    var presetaddresses = {
-      weirss : ["root@weirss.me"]
-      ,gary : ["gary@zzgary.info","-p","2120"]
-      ,aws : ["-i",process.env.HOME+"/temp/taoalpha.pem","ubuntu@52.32.254.98"]
-      ,groupfinder : ["-i",process.env.HOME+"/temp/aws.pem","ubuntu@52.26.51.6"]
-    }
-    var address = ""
-    if(args._[1]){
-      address = [args._[1]]
-    }else if(args.n){
-      address = presetaddresses[args.n]
-    }
-    var ssh = child.spawn('ssh',address,{
-      stdio:'inherit'
-    });
-    ssh.on('close',(code) => {
-      Helper.sayGoodBye(args)
-    })
-  },
-  // search cdnjs
-  cdn : (args) => {
-    if(args._[1]){
-      var cdnjs = require("../data/cdnjs.json") 
-      var trieData = require("../data/trie.json") 
-      var count = 0
-      var tree = new Trie()
-      tree.root = trieData.root
-      // build the trie tree at the first time
-      //for(var item in cdnjs){
-      //  tree.insert(item)
-      //}
-      //fs.writeFileSync("../data/trie.json",JSON.stringify(tree))
-      tree.autocomplete(args._[1]).slice(0,10).map((v) => {
-        var fixLenghtItem = Helper.toLength(v,30)
-        console.log(`${fixLenghtItem}${cdnjs[v]}`)
-      })
-
-    }else{
-      Tasks.help("cdn")
-    }
-  },
-  // random book from my reading list
-  read : (args) => {
-    var filepath = ''
-    var book_dir = process.env.HOME+"/readings"
-    if(args._[1]){
-      filepath = [args._[1]]
-    }else{
-      var books = fs.readdir(book_dir,(err,list) => {
-        if (err) return err;
-        filepath = [book_dir + "/" + list[Math.floor(Math.random()*list.length)]]
-        var book = child.spawn('open',filepath,{
-          stdio:'inherit'
-        });
-        book.on('close',(code) => {
-          args.action = "reading"
-          Helper.sayGoodBye(args)
-        })
-      })
-    }
-  },
-  // rss reader
-  rss : (args) => {
-    // will use the request and cheerio to get and parse the html, maybe need phantomjs to help me deal with some dynamic stuff
-    
-  },
-  //angularjs
-  serve : (args) => {
-    var pathname = path.join(__dirname,'../lib/angular/')
-    if(Helper.exists(args._[1])){
-      pathname = path.join.apply(Helper.pathParser([process.cwd(),args._[1]]))
-    }
-    child.exec('open http://localhost:8080/', (err, stdout, stderr) => {})
-    var handler = (request, response) => {
-    
-      var uri = url.parse(request.url).pathname
-        , filename = path.join(pathname, uri);
-      
-      var filestatus = Helper.fileExists(filename,'dir')
-      if(!filestatus) {
-        response.writeHead(404, {"Content-Type": "text/plain"});
-        response.write("404 Not Found\n");
-        response.end();
-        return;
-      }
-    
-      if (fs.statSync(filename).isDirectory()) filename += '/index.html';
-    
-      fs.readFile(filename, (err, file) => {
-        if(err) {        
-          response.writeHead(500, {"Content-Type": "text/plain"});
-          response.write(err + "\n");
-          response.end();
-          return;
-        }
-    
-        response.writeHead(200);
-        response.end(file);
-      });
-    }
-    var app = http.createServer(handler)
-    var io = require('socket.io')(app)
-    app.listen(8080);
-
-    io.on('connection', (socket) => {
-      socket.on('exit', (data) => {
-        //Tasks.todo(data)
-        Helper.sayGoodBye(args)
-      });
-      socket.on('getTodoList', (data) => {
-        var todoList = Tasks.todo({"json":true})
-        socket.emit("todoData",todoList)
-      });
-    });
-    
-    console.log("Static file server running at\n  => http://localhost:8080/\nCTRL + C to shutdown");
-  },
-  // open leetcode
-  oj : (args) => {
-    child.exec('open https://leetcode.com/problemset/algorithms/', (err, stdout, stderr) => {
-      Helper.sayGoodBye(args)
-    })
-  },
-  // npm command
-  npm : (args) => {
-    if(Helper.exists(args._[1]) && args._[1] == "update"){
-      var packages = child.execSync('npm outdated').toString()
-      packages = packages.split(/\n/).slice(1,packages.length)
-      packages.pop()
-      var temp = {}
-      packages.map((v) => {
-        var re = /[a-zA-Z0-9-_\.]+\s*?/g
-        var result = v.match(re)
-        temp[result[0]] = {}
-        temp[result[0]].current = result[1]
-        temp[result[0]].wanted = result[2]
-        temp[result[0]].latest = result[3]
-      })
-      packages = temp
-      delete temp
-      if(args.latest){
-        Helper.npmHelper(packages)
-      }else{
-        Helper.npmHelper(packages,'wanted')
-      }
-    }
-  },
-  // initial the config file
-  init : (args) => {
-    var configuration = {}
-    configuration.username = "Tao"
-    configuration.summary = true
-    configuration.todoFilePath = ''
-    var filepath = path.join(__dirname,'.config.json')
-    if(!Helper.fileExists(filepath)){
-      console.log("Initialize with default configuration.")
-      Helper.writeToFile(filepath,configuration)
-    }else if(args.e){
-      args._[1] = filepath
-      Tasks.edit(args)
-    }else{
-      var config = JSON.parse(fs.readFileSync(filepath))
-      console.log("You already have one configuration file here: "+filepath)
-      console.log(config)
-      console.log("Use 'baby init -e' to edit your configuration file.")
-    }
-  },
   // collection of tools
   tool : (args) => {
     switch (args._[1]){
@@ -596,16 +599,21 @@ var Tasks = {
   help : (args) => {
     var helpDoc = {
       usage:{
+        init:    "baby init [-e]                     Initial with default configuration or edit the configuration",
+        cdn:     "baby cdn <prefix>                  Search for popular front-end frameword with cdnjs resoureces", 
         edit:    "baby edit <path-to-file> ...       Edit one file, use vim as the default editor",
-        sleep:   "baby sleep [-t | --time]           Close the display within specific duration",
-        ssh:     "baby ssh <address> [-n | --name]   Log in with an address or a shortcut name",
+        idea:    "baby idea [ -a -d -r -e ] ...      A simple idea collection tool",
+        npm:     "baby npm <command> [--latest]      Help update local npm modules to the latest or wanted version",
+        oj:      "baby oj                            open the oj with a random question",
         praise:  "baby praise                        Show me some positive energy",
         read:    "baby read                          Pick a random book from my reading list and open it",
-        todo:    "baby todo [ -a -d -e ] ...         A simple todo command tool",
-        idea:    "baby idea [ -a -d -r -e ] ...      A simple idea collection tool",
+        rss:     "baby rss                           Under constructing...",
         serve:   "baby serve <path>                  Create a http server with any path", 
-        npm:     "baby npm <command> [--latest]      Help update local npm modules to the latest or wanted version",
+        sleep:   "baby sleep [-t | --time]           Close the display within specific duration",
+        ssh:     "baby ssh <address> [-n | --name]   Log in with an address or a shortcut name",
         summary: "baby summary                       Show a simple statistic of editing activity etc",
+        todo:    "baby todo [ -a -d -e ] ...         A simple todo command tool",
+        tool:    "baby tool <command>                Access all handy tools from here",
         help:    "baby help <command>                Show this screen",
       },
       option:{

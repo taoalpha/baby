@@ -1,88 +1,9 @@
 #! /usr/bin/env node
 var fs = require("fs")
 var path = require("path")
+var child_process = require('child_process')
 
 var Helper = {
-  // colors need to use
-  Colors : {
-    Reset : "\x1b[0m",FgRed : "\x1b[31m",FgGreen : "\x1b[32m",FgYellow : "\x1b[33m",FgBlue : "\x1b[34m",FgMagenta : "\x1b[35m",FgCyan : "\x1b[36m",FgWhite : "\x1b[37m",BgBlack : "\x1b[40m",BgRed : "\x1b[41m",BgGreen : "\x1b[42m",BgYellow : "\x1b[43m",BgBlue : "\x1b[44m",BgMagenta : "\x1b[45m",BgCyan : "\x1b[46m"
-  },
-  // praise me...
-  praiseMe : () => {
-    var adj = ["awesome","fantastic","wonderful","fabulous","outstanding","legendary","great","briliant","talented","amazing"]
-    console.log(`${Helper.Colors[Helper.pickRandomProperty(Helper.Colors)]}Tao, You are truly ${adj[Math.floor(Math.random()*adj.length)]}!${Helper.Colors.Reset}`)
-  },
-  // pick a random property of an object
-  pickRandomProperty : (obj) => {
-    var result;
-    var count = 0;
-    for (var prop in obj)
-        if (Math.random() < 1/++count)
-           result = prop;
-    return result;
-  },
-  // say good bye
-  sayGoodBye : (args) => {
-    var action = args.action || "coding"
-    console.log(`${Helper.Colors.FgGreen}Happy ${action}, ${args.CONFIG.username || 'tao'} !${Helper.Colors.Reset}`)
-  },
-  // check whether variable or property exist or not
-  exists : (val) => {
-    return typeof val !== "undefined"
-  },
-  // Fix length for string
-  toLength : (val,len) => {
-    var val = val+""
-    return (val+(new Array(val.length*10)).join(" ")).slice(0,len)
-  },
-  // check whether file or directory exists or not
-  fileExists : (filePath,type) => {
-    if(type=="dir"){
-      try{
-        return fs.statSync(filePath).isDirectory();
-      }catch (err){
-        return false;
-      }
-    }
-    try{
-      return fs.statSync(filePath).isFile();
-    }catch (err){
-      return false;
-    }
-  },
-  // path parser
-  pathParser : (args) => {
-    var oLen = args.length
-    for(var i = 0;i<oLen;i++){
-      if(args[i][0] === '~' || args[i][0] === '/'){
-        var cutLen = args.splice(0,i).length
-        oLen -= cutLen
-        i -= cutLen
-      }
-    }
-    return args
-  },
-  // helper for npm
-  npmHelper : (packages,flag) => {
-    if(Object.keys(packages).length == 0){
-      Helper.sayGoodBye()
-      return
-    }else{
-      var item = Object.keys(packages)[0]
-      var version = "latest"
-      if(flag == "wanted"){
-        version = packages[item].wanted
-      }
-      console.log('Installing '+item)
-      var single = child.spawn('npm',['install',item+'@'+version,'--save'],{
-        stdio:"inherit"
-      })
-      single.on('close',function(){
-        delete packages[item]
-        Helper.npmHelper(packages)
-      })
-    }
-  },
   // ask for questions
   ask : (q,a,callback) => {
     if(q.length==0){
@@ -100,6 +21,82 @@ var Helper = {
       Helper.ask(q,a,callback)
     });
   },
+  // colors need to use
+  Colors : {
+    Reset : "\x1b[0m",FgRed : "\x1b[31m",FgGreen : "\x1b[32m",FgYellow : "\x1b[33m",FgBlue : "\x1b[34m",FgMagenta : "\x1b[35m",FgCyan : "\x1b[36m",FgWhite : "\x1b[37m",BgBlack : "\x1b[40m",BgRed : "\x1b[41m",BgGreen : "\x1b[42m",BgYellow : "\x1b[43m",BgBlue : "\x1b[44m",BgMagenta : "\x1b[45m",BgCyan : "\x1b[46m"
+  },
+  // check whether variable or property exist or not
+  exists : (val) => {
+    return typeof val !== "undefined"
+  },
+  // exec some commands that pass in
+  exec : (command,callback) => {
+    child_process.exec(command,function(error,stdout,stderr){
+      if(stderr) console.log('exec error: ' + error)
+      if(error == null){
+        if(callback) callback(stdout)
+      }else{
+        console.log('exec error: ' + error);
+      }
+    })
+  },
+  // execSync
+  execSync : (command) => {
+    return child_process.execSync(command)
+  },
+  // check whether file or directory exists or not
+  fileExists : (filePath,type) => {
+    if(type=="dir"){
+      try{
+        return fs.statSync(filePath).isDirectory();
+      }catch (err){
+        return false;
+      }
+    }
+    try{
+      return fs.statSync(filePath).isFile();
+    }catch (err){
+      return false;
+    }
+  },
+  // helper for npm
+  npmHelper : (packages,flag) => {
+    if(Object.keys(packages).length == 0){
+      Helper.sayGoodBye()
+      return
+    }else{
+      var item = Object.keys(packages)[0]
+      var version = "latest"
+      if(flag == "wanted"){
+        version = packages[item].wanted
+      }
+      console.log('Installing '+item)
+      var single = child_process.spawn('npm',['install',item+'@'+version,'--save'],{
+        stdio:"inherit"
+      })
+      single.on('close',function(){
+        delete packages[item]
+        Helper.npmHelper(packages)
+      })
+    }
+  },
+  // path parser
+  pathParser : (args) => {
+    var oLen = args.length
+    for(var i = 0;i<oLen;i++){
+      if(args[i][0] === '~' || args[i][0] === '/'){
+        var cutLen = args.splice(0,i).length
+        oLen -= cutLen
+        i -= cutLen
+      }
+    }
+    return args
+  },
+  // praise me...
+  praiseMe : () => {
+    var adj = ["awesome","fantastic","wonderful","fabulous","outstanding","legendary","great","briliant","talented","amazing"]
+    console.log(`${Helper.Colors[Helper.pickRandomProperty(Helper.Colors)]}Tao, You are truly ${adj[Math.floor(Math.random()*adj.length)]}!${Helper.Colors.Reset}`)
+  },
   // print files under a specific path
   printFiles : (pathname,step) => {
     var step = step || 1
@@ -115,6 +112,32 @@ var Helper = {
       }
     }
   },
+  // pick a random property of an object
+  pickRandomProperty : (obj) => {
+    var result;
+    var count = 0;
+    for (var prop in obj)
+        if (Math.random() < 1/++count)
+           result = prop;
+    return result;
+  },
+  // say good bye
+  sayGoodBye : (args) => {
+    var action = args ? args.action : "coding"
+    console.log(`${Helper.Colors.FgGreen}Happy ${action}, ${args ? args.CONFIG.username : 'tao'} !${Helper.Colors.Reset}`)
+  },
+  // spawn for child_process
+  spawn : (action,command) => {
+    return child_process.spawn(action,command,{
+      stdio:'inherit'
+    });
+  },
+  // Fix length for string
+  toLength : (val,len) => {
+    var val = val+""
+    return (val+(new Array(val.length*10)).join(" ")).slice(0,len)
+  },
+  // write data into file
   writeToFile : (filepath,data) => {
     fs.writeFileSync(filepath,JSON.stringify(data))
   }
