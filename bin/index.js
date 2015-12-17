@@ -152,8 +152,6 @@ var Tasks = {
     if(Helper.exists(args._[1])){
       var msg = args._[2] || "daily update"
       switch (args._[1]) {
-        case "blog":
-          break
         case "normal":
           Helper.execSync("git add .")
           Helper.execSync(`git commit -m'${msg}'`)
@@ -569,7 +567,6 @@ var Tasks = {
         }
         content.total = parseInt(content.total) - 1
       }
-
       if(content.items.length<1){
         console.log("Now you have no tasks on list, add some ^_^ !")
       }else{
