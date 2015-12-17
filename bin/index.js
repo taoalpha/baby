@@ -155,7 +155,9 @@ var Tasks = {
         case "blog":
           break
         case "normal":
-          Helper.exec("git add .",Helper.exec(`git commit -m"${msg}"`,Helper.exec(`git push`)))
+          Helper.execSync("git add .")
+          Helper.execSync(`git commit -m'${msg}'`)
+          Helper.execSync(`git push`)
           break
         default:
           console.log("missing parameter")
