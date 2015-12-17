@@ -123,7 +123,7 @@ var Helper = {
   },
   // say good bye
   sayGoodBye : (args) => {
-    var action = args ? args.action : "coding"
+    var action = args ? args.action ? args.action:"coding" : "coding"
     console.log(`${Helper.Colors.FgGreen}Happy ${action}, ${args ? args.CONFIG.username : 'tao'} !${Helper.Colors.Reset}`)
   },
   // spawn for child_process

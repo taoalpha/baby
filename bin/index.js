@@ -64,8 +64,6 @@ complete.on("value",function(option){
   }
 })
 
-// Initialize the omelette.
-
 // get arguments
 var userArgs = parseArgs(process.argv.slice(2))
 
@@ -152,12 +150,18 @@ var Tasks = {
   // support git short name
   git : (args) => {
     if(Helper.exists(args._[1])){
+      var msg = args._[2] || "daily update"
       switch (args._[1]) {
         case "blog":
           break
         case "normal":
+          Helper.exec("git add .",Helper.exec(`git commit -m"${msg}"`,Helper.exec(`git push`)))
           break
+        default:
+          console.log("missing parameter")
       }
+    }else{
+      console.log("Please specify your action!")
     }
   },
   // idea collection
@@ -646,8 +650,7 @@ var Tasks = {
   }
 }
 
-// assign tasks according to the args
-
+// assign tasks with shortnames
 var shortName = {
   e:"edit",
   h:"help",
@@ -670,10 +673,14 @@ if(Helper.fileExists(configFile)){
   userArgs.CONFIG = require(configFile)
 }
 
+// by default, disable the autocomplete
 if(userArgs.CONFIG.autocompletion){
   complete.init()
 }
 
+
+
+// main, assign the task to proper handler
 if(userArgs._[0]){
   if(Tasks.hasOwnProperty(userArgs._[0])){
     Tasks[userArgs._[0]](userArgs)
