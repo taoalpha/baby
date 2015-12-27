@@ -88,6 +88,39 @@ var Tasks = {
       console.log("Use 'baby init -e' to edit your configuration file.")
     }
   },
+  // blog
+  blog : (args) => {
+    // blog new draft "name of the post" -c blog
+    var scaffolds = process.env.HOME+"/github/blog/scaffolds/"
+    var posts = process.env.HOME+"/github/blog/source/_posts/"
+    if(Helper.exists(args._[1]) && args._.length > 2){
+      switch (args._[1]){
+        case "new":
+          var tmplName = args._[3] ? args._[2]+".md" : "post.md"
+          var title = args._[3] || args._[2]
+          if(!Helper.fileExists(scaffolds+tmplName)){
+            Tasks.help("blog")
+          }else{
+            var tmpl = fs.readFileSync(scaffolds+tmplName,"utf-8")
+            var filepath = posts+new Date().toISOString().split("T")[0]+"-"+title.replace(/ /g,'-')+".md"
+            if(Helper.exists(args.c)){
+              filepath = posts+args.c+"/"+title.toLowerCase().replace(/ /g,'-')+".md"
+            }
+            tmpl = tmpl.replace("{{ date }}",new Date().toISOString().split(".")[0].replace("T"," "))
+            .replace('{{ title }}',title)
+            Helper.writeToFile(filepath,tmpl,"text")
+            console.log(`${Helper.Colors.FgGreen}Your post has created ans saved in: ${Helper.Colors.FgRed}${filepath} ${Helper.Colors.Reset}`)
+            args._[1] = filepath
+            Tasks.edit(args)
+          }
+          break
+        default:
+          Tasks.help("blog")
+      }
+    }else{
+      Tasks.help("blog")
+    }
+  },
   // search cdnjs
   cdn : (args) => {
     if(args._[1]){
@@ -101,7 +134,9 @@ var Tasks = {
       //  tree.insert(item)
       //}
       //fs.writeFileSync("../data/trie.json",JSON.stringify(tree))
-      tree.autocomplete(args._[1]).slice(0,10).map((v) => {
+      var results = tree.autocomplete(args._[1])
+      if(!results){console.log("No Matches Found!");return}
+      results.slice(0,10).map((v) => {
         var fixLenghtItem = Helper.toLength(v,30)
         console.log(`${fixLenghtItem}${cdnjs[v]}`)
       })
@@ -394,8 +429,10 @@ var Tasks = {
   // connect ssh
   ssh : (args) => {
     var presetaddresses = {
-      weirss : ["root@weirss.me"]
+      weirss : ["root@weirss.me"],
+      pi: ["pi@104.229.171.106"]
       ,gary : ["gary@zzgary.info","-p","2120"]
+      ,juan : ["root@www.51juanzeng.com"]
       ,aws : ["-i",process.env.HOME+"/temp/taoalpha.pem","ubuntu@52.32.254.98"]
       ,groupfinder : ["-i",process.env.HOME+"/temp/aws.pem","ubuntu@52.26.51.6"]
     }
@@ -603,6 +640,7 @@ var Tasks = {
     var helpDoc = {
       usage:{
         init:    "baby init [-e]                     Initial with default configuration or edit the configuration",
+        blog:    "baby blog <command>                create new post",
         cdn:     "baby cdn <prefix>                  Search for popular front-end frameword with cdnjs resoureces", 
         edit:    "baby edit <path-to-file> ...       Edit one file, use vim as the default editor",
         idea:    "baby idea [ -a -d -r -e ] ...      A simple idea collection tool",
@@ -651,15 +689,16 @@ var Tasks = {
 
 // assign tasks with shortnames
 var shortName = {
+  b:"blog",
   e:"edit",
   h:"help",
-  s:"sleep",
-  r:"read",
-  p:"praise",
-  kuawo:"praise",
-  t:"todo",
   i:"idea",
-  ss:"ssh"
+  kuawo:"praise",
+  p:"praise",
+  r:"read",
+  s:"sleep",
+  ss:"ssh",
+  t:"todo"
 }
 
 // load config file first if exists

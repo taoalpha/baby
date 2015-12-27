@@ -52,11 +52,12 @@ var Helper = {
       }catch (err){
         return false;
       }
-    }
-    try{
-      return fs.statSync(filePath).isFile();
-    }catch (err){
-      return false;
+    }else{
+      try{
+        return fs.statSync(filePath).isFile();
+      }catch (err){
+        return false;
+      }
     }
   },
   // helper for npm
@@ -71,7 +72,7 @@ var Helper = {
         version = packages[item].wanted
       }
       console.log('Installing '+item)
-      var single = child_process.spawn('npm',['install',item+'@'+version,'--save'],{
+      var single = child_process.spawn('npm',['install',item+'@'+version,'--save-dev'],{
         stdio:"inherit"
       })
       single.on('close',function(){
@@ -103,9 +104,13 @@ var Helper = {
     //console.log(Helper.toLength('====================',step*2)+pathname)
     var fileList = fs.readdirSync(pathname)
     //,function(err,list){
-    if(!fileList.length) {console.log("no files");return}
+    if(!fileList.length) {console.log(Helper.toLength('----------------------------',step*3)+"no files");return}
     for(var v in fileList){
+      //if(v == 5){
+      //  console.log(Helper.toLength('----------------------------',step*3)+(fileList.length - v)+" More files not show here")
+      //}else if(v<5){
       console.log(Helper.toLength('----------------------------',step*3)+fileList[v])
+      //}
       var newpath = path.join(pathname,fileList[v])
       if(Helper.fileExists(newpath,'dir')){
         Helper.printFiles(newpath,step+1)
@@ -138,8 +143,11 @@ var Helper = {
     return (val+(new Array(val.length*10)).join(" ")).slice(0,len)
   },
   // write data into file
-  writeToFile : (filepath,data) => {
-    fs.writeFileSync(filepath,JSON.stringify(data))
+  writeToFile : (filepath,data,type) => {
+    if(type!=="text"){
+      data = JSON.stringify(data)
+    }
+    fs.writeFileSync(filepath,data,"utf8")
   }
 }
 
