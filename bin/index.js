@@ -203,6 +203,7 @@ var Tasks = {
   idea : (args) => {
     var filepath = path.join(__dirname,'../data/.idea.json')
     var filestatus = Helper.fileExists(filepath)
+    var showIdea = true
     // deal with no file and open the server
     if(!filestatus){
       var rl = readline.createInterface({
@@ -225,6 +226,7 @@ var Tasks = {
       // add new idea
       var ideaData = require(filepath)
       if(Helper.exists(args.a)){
+        showIdea = false
         var questions = ["Describe your idea: ","Inspired by: ","Under which category(life,work,travel...): ","Tag you to label it: "] 
         // loop to ask all these questions and save all answers 
         var callback = (ans) => {
@@ -237,6 +239,7 @@ var Tasks = {
           data.status = "backlog"
           ideaData.ideas.push(data)
           Helper.writeToFile(filepath,ideaData)
+          showIdea = true
         }
         Helper.ask(questions,[],callback)
       }
@@ -288,15 +291,17 @@ var Tasks = {
       if(ideaData.ideas.length<1){
         console.log("Now you have no tasks on list, add some ^_^ !")
       }else{
-        ideaData.ideas.map((v,i) => {
-          if(v.status =="done"){
-            console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)}\u2713 ${Helper.toLength(v.status,10)}${v.desc}${Helper.Colors.Reset}`)
-          }else if(v.status == "ongoing"){
-            console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)} ${Helper.toLength(v.status,10)}${v.desc}${Helper.Colors.Reset}`)
-          }else{
-            console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)} ${Helper.toLength(v.status,10)}${v.desc}${Helper.Colors.Reset}`)
-          }
-        })
+        if(showIdea){
+          ideaData.ideas.map((v,i) => {
+            if(v.status =="done"){
+              console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)}\u2713 ${Helper.toLength(v.status,10)}${v.desc}${Helper.Colors.Reset}`)
+            }else if(v.status == "ongoing"){
+              console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)} ${Helper.toLength(v.status,10)}${v.desc}${Helper.Colors.Reset}`)
+            }else{
+              console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)} ${Helper.toLength(v.status,10)}${v.desc}${Helper.Colors.Reset}`)
+            }
+          })
+        }
       }
     } 
   },
