@@ -93,7 +93,7 @@ var Tasks = {
     // blog new draft "name of the post" -c blog
     var scaffolds = process.env.HOME+"/github/blog/scaffolds/"
     var posts = process.env.HOME+"/github/blog/source/_posts/"
-    if(Helper.exists(args._[1]) && args._.length > 2){
+    if(Helper.exists(args._[1])){
       switch (args._[1]){
         case "new":
           var tmplName = args._[3] ? args._[2]+".md" : "post.md"
@@ -113,6 +113,12 @@ var Tasks = {
             args._[1] = filepath
             Tasks.edit(args)
           }
+          break
+        case "dir":
+          var dir = "~/github/blog"
+          var proc = require('child_process').spawn('pbcopy')
+          proc.stdin.write(dir)
+          proc.stdin.end()
           break
         default:
           Tasks.help("blog")
@@ -154,10 +160,10 @@ var Tasks = {
       filepath = __dirname+'/index.js'
     }
     // get the initial number of lines
-    Helper.exec("wc -l "+filepath,(out) => {initial_lines = out.split("/")[0]})
+    args.isDir || Helper.exec("wc -l "+filepath,(out) => {initial_lines = out.split("/")[0]})
     var vim = Helper.spawn('vim',[filepath])
     vim.on('close',(code) => {
-      Helper.exec("wc -l "+filepath,
+      args.isDir || Helper.exec("wc -l "+filepath,
         (out) => {
           end_lines = out.split("/")[0] 
           var color = Helper.Colors.FgGreen + "+ "
@@ -178,8 +184,7 @@ var Tasks = {
           }
           console.log(`You have made ${color}${ end_lines - initial_lines }${Helper.Colors.Reset} changes !`)
           Helper.sayGoodBye(args) 
-        }
-      );
+        });
     })
   },
   // support git short name
@@ -353,19 +358,26 @@ var Tasks = {
   read : (args) => {
     var filepath = ''
     var book_dir = process.env.HOME+"/readings"
-    if(args._[1]){
-      filepath = [args._[1]]
-    }else{
-      var books = fs.readdir(book_dir,(err,list) => {
-        if (err) return err;
-        filepath = [book_dir + "/" + list[Math.floor(Math.random()*list.length)]]
-        var book = Helper.spawn('open',filepath)
-        book.on('close',(code) => {
-          args.action = "reading"
-          Helper.sayGoodBye(args)
-        })
+    var books = fs.readdir(book_dir,(err,list) => {
+      if (err) return err;
+      var rightPrefix = false
+      filepath = [book_dir + "/" + list[Math.floor(Math.random()*list.length)]]
+      if(!Helper.exists(args._[1])){
+        rightPrefix = true
+      }
+      while(!rightPrefix){
+        var fName = list[Math.floor(Math.random()*list.length)]
+        if(fName.toLowerCase().indexOf(args._[1])>-1){
+          rightPrefix = true
+          filepath = [book_dir + "/" + fName]
+        }
+      }
+      var book = Helper.spawn('open',filepath)
+      book.on('close',(code) => {
+        args.action = "reading"
+        Helper.sayGoodBye(args)
       })
-    }
+    })
   }, 
   // rss reader
   rss : (args) => {
@@ -736,6 +748,10 @@ if(userArgs._[0]){
     var filepath = path.join(process.cwd(),userArgs._.join("/"))
     if(Helper.fileExists(filepath)){
       userArgs._[1] = filepath
+      Tasks.edit(userArgs)
+    }else if(Helper.fileExists(filepath,'dir')){
+      userArgs._[1] = filepath
+      userArgs.isDir = true
       Tasks.edit(userArgs)
     }else{
       Tasks["help"](userArgs)

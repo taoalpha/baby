@@ -14,6 +14,7 @@ $icon-font-path: "../../bower_components/bootstrap-sass/assets/fonts/bootstrap/"
 
 body{
   background-size: cover;
+  background-image:url("https://assetcdn.500px.org/assets/home/home_cover-86eea8a3203efdf9e70a1712d8f6742e.jpg");
   &:before{
     content: "";
     display:block;
