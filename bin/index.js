@@ -537,10 +537,11 @@ var Tasks = {
         if(answer.toLowerCase() == "y"){
           var data = {}
           data.total = 0
-          data.creationTime = new Date()
-          data.lastUpdated = new Date()
-          data.items = []
-          data.doneItems = []
+          data.creationTime = new Date().toISOString()
+          data.lastUpdated = new Date().toISOString()
+          data.data = {}
+          data.oldData = {}
+          data.doneItems = 0
           Helper.writeToFile(filepath,data)
           Helper.sayGoodBye(args)
         }
@@ -548,28 +549,80 @@ var Tasks = {
       });
     }else{
       var content = require(filepath)
+      // build several mappers
+      var allMapper = []
+      for(var dayItem in content.data){
+        content.data[dayItem].items.map(function(v){
+          var singleItem = {}
+          singleItem.parent = content.data[dayItem]
+          singleItem.pointer = v
+          singleItem.content = v.content
+          singleItem.status = v.status
+          singleItem.done = v.done
+          allMapper.push(singleItem)
+        })
+      }
+      // mapper is used to access item with index so that we can mark it as done or undone
+      var showList = () =>{
+        if(content.total<1){
+          console.log("Now you have no tasks on list, add some ^_^ !")
+        }else{
+          var allMapper = []
+          for(var dayItem in content.data){
+            content.data[dayItem].items.map(function(v){
+              var singleItem = {}
+              singleItem.pointer = v
+              singleItem.content = v.content
+              singleItem.status = v.status
+              singleItem.done = v.done
+              allMapper.push(singleItem)
+            })
+          }
+          allMapper.map((v,i) => {
+            if(v.status == "done"){
+              console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)}\u2713 ${Helper.toLength(v.status,10)}${v.content}${Helper.Colors.Reset}`)
+            }else if(v.status == "ongoing"){
+              console.log(`${Helper.Colors.FgRed}${Helper.toLength(i,5)}${Helper.toLength(v.status,10)}${v.content}${Helper.Colors.Reset}`)
+            }else if(v.status == "obsolete"){
+              console.log(`${Helper.Colors.FgYellow}${Helper.toLength(i,5)}${Helper.toLength(v.status,10)}${v.content}${Helper.Colors.Reset}`)
+            }
+          })
+        }
+        content.lastUpdated = new Date().toISOString()
+        Helper.writeToFile(filepath,content)
+      }
+      // special for json api
       if(args.json){
         return content
       }
-      //JSON.parse(fs.readFileSync(filepath))
-      var todoLists = content.items
+      // special for only `bb t`
+      if(Object.keys(args).length == 2){
+        showList()
+        return
+      }
       if(Helper.exists(args.a)){
         if(args.a  && args.a !== true){
-          var newTask = {}
-          newTask.task = args.a
-          newTask.status = "ongoing"
-          newTask.addTime = new Date()+''
-          newTask.doneTime = ''
-          todoLists.push(newTask)
-          content.total = parseInt(content.total) + 1
+          var newItem = {}
+          newItem.content= args.a
+          newItem.status = "ongoing"
+          newItem.done = false
+          newItem.addTime = new Date().toISOString()
+          var dateID = newItem.addTime.split("T")[0]
+          content.data[dateID] = content.data[dateID] || {}
+          content.data[dateID].doneItems = content.data[dateID].doneItems || 0
+          content.data[dateID].items = content.data[dateID].items || []
+          content.data[dateID].items.push(newItem)
+          content.total += 1
+          showList()
         }else{
-          console.log(`No task found!`)
+          console.log(`No item found!`)
           Tasks.help("todo")
         }
       }
       if(Helper.exists(args.e)){
         if(args.e !== true && parseInt(args.e) == parseInt(args.e)){
-          todoLists[args.e].task = args._[1]
+          allMapper[args.e].pointer.content = args._[1]
+          showList()
         }else{
           console.log(`No task specified!`)
           Tasks.help("todo")
@@ -577,16 +630,25 @@ var Tasks = {
       }
       if(Helper.exists(args.d)){
         if(args.d !== true && parseInt(args.d) == parseInt(args.d)){
-          todoLists[parseInt(args.d)].status = "done"
-          todoLists[parseInt(args.d)].doneTime = new Date()+''
+          allMapper[parseInt(args.d)].pointer.status = "done"
+          allMapper[parseInt(args.d)].pointer.done = true
+          allMapper[parseInt(args.d)].pointer.doneTime = new Date().toISOString()
+          allMapper[parseInt(args.d)].parent.doneItems += 1
+          content.doneItems += 1
+          showList()
         }else{
-          if(content.items.length<1){
+          if(Object.keys(content.data).length<1){
             console.log("Now you have no tasks on list, add some ^_^ !")
           }else{
-            content.doneItems.map((v,i) => {
-              if(v.status == "done"){
-                console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)}\u2713 ${Helper.toLength(v.status,10)}${v.task}${Helper.Colors.Reset}`)
+            // show all items that marked as done - how good you are!!
+            var doneMapper = []
+            allMapper.map((v,i) =>{
+              if(v.done){
+                doneMapper.push(v)
               }
+            })
+            doneMapper.map((v,i) => {
+              console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)}\u2713 ${Helper.toLength(v.status,10)}${v.content}${Helper.Colors.Reset}`)
             })
           }
           Tasks.help("todo")
@@ -595,46 +657,39 @@ var Tasks = {
       }
       if(Helper.exists(args.u)){
         if(args.u !== true && parseInt(args.u) == parseInt(args.u)){
-          todoLists[args.u].status = "ongoing"
-          todoLists[parseInt(args.u)].doneTime = ''
+          allMapper[args.u].pointer.status = "ongoing"
+          allMapper[parseInt(args.u)].pointer.doneTime = ''
+          allMapper[parseInt(args.u)].pointer.done = false
+          allMapper[parseInt(args.u)].parent.doneItems += -1
+          content.doneItems += -1
+          showList()
         }else{
           console.log(`no task specified!`)
           Tasks.help("todo")
         }
       }
       if(Helper.exists(args.clean)){
-        // clean the done tasks
-        for(var i =0;i<content.items.length;i++){
-          if(content.items[i].status == "done"){
-            content.doneItems.push(content.items.splice(i,1)[0])
-            i --
-          }
+        // clean all task to oldData
+        for(var dayItem in content.data){
+          content.oldData[dayItem] = content.data[dayItem]
         }
+        content.data = {}
+        content.total = 0
+        content.doneItems = 0
+        showList()
       }
       if(Helper.exists(args.clear)){
-        content.items = []
+        content.data = {}
+        content.oldData = {}
         content.total = 0 
+        showList()
       }
       if(Helper.exists(args.r)){
         if(args.r !== true && parseInt(args.r) == parseInt(args.r)){
-          todoLists.splice(parseInt(args.r),1)
+          // should delete the item
         }
-        content.total = parseInt(content.total) - 1
-      }
-      if(content.items.length<1){
-        console.log("Now you have no tasks on list, add some ^_^ !")
-      }else{
-        content.items.map((v,i) => {
-          if(v.status == "done"){
-            console.log(`${Helper.Colors.FgGreen}${Helper.toLength(i,3)}\u2713 ${Helper.toLength(v.status,10)}${v.task}${Helper.Colors.Reset}`)
-          }else if(v.status == "ongoing"){
-            console.log(`${Helper.Colors.FgRed}${Helper.toLength(i,5)}${Helper.toLength(v.status,10)}${v.task}${Helper.Colors.Reset}`)
-          }else if(v.status == "obsolete"){
-            console.log(`${Helper.Colors.FgYellow}${Helper.toLength(i,5)}${Helper.toLength(v.status,10)}${v.task}${Helper.Colors.Reset}`)
-          }
-        })
-      }
-      Helper.writeToFile(filepath,content)
+        // content.total = parseInt(content.total) - 1
+      } 
     }
   },
   // collection of tools

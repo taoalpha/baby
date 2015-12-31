@@ -4,7 +4,32 @@
  */
 $navbar-inverse-link-color: #5AADBB;
 $icon-font-path: "../../bower_components/bootstrap-sass/assets/fonts/bootstrap/";
+$bgSrc: "https://papaly.com/assets/speed_dial_backgrounds/speed_dial_bg_08-a197d5cf58247d02d8b7c526f56d4d5d.jpg";
 
+/* some mixins */
+@mixin flexbox() {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+}
+
+@mixin flex($values) {
+  -webkit-box-flex: $values;
+  -moz-box-flex:  $values;
+  -webkit-flex:  $values;
+  -ms-flex:  $values;
+  flex:  $values;
+}
+
+@mixin order($val) {
+  -webkit-box-ordinal-group: $val;  
+  -moz-box-ordinal-group: $val;     
+  -ms-flex-order: $val;     
+  -webkit-order: $val;  
+  order: $val;
+}
 /**
  *  Do not remove the comments below. It's the markers used by wiredep to inject
  *  sass dependencies when defined in the bower.json of your dependencies
@@ -12,32 +37,78 @@ $icon-font-path: "../../bower_components/bootstrap-sass/assets/fonts/bootstrap/"
 // bower:scss
 // endbower
 
+
+// global class styles
+
+*{
+  outline:none;
+}
+
+.crystal{
+  background-color:rgba(0,0,0,0.1);
+  &:before{
+    content:"";
+    display:block;
+    height:120%;
+    width: 120%;
+    background-image:linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url($bgSrc);
+    background-attachment: fixed;
+    position: absolute;
+    top:0px;
+    background-size: cover;
+    -webkit-filter: blur(4px);
+    filter: blur(4px);
+    z-index:-1;
+  }
+}
+
+html,body{
+  height: 100%;
+}
+
 body{
+  min-height: 100%;
   background-size: cover;
-  background-image:url("https://assetcdn.500px.org/assets/home/home_cover-86eea8a3203efdf9e70a1712d8f6742e.jpg");
+  background-image:url($bgSrc);
   &:before{
     content: "";
     display:block;
-    background-color:rgba(0,0,0,0.6);
     width:100%;
     height:100%;
     position:absolute;
     top:0px;
     z-index:-1;
   }
-}
-.browsehappy {
-  margin: 0.2em 0;
-  background: #ccc;
-  color: #000;
-  padding: 0.2em 0;
-}
-
-.thumbnail {
-  height: 200px;
-
-  img.pull-right {
-    width: 50px;
+  div.wrapper {
+    color:white;
+    height:100%;
+    @include flexbox();
+    flex-flow: row wrap;
+    div.left_sidebar, div.right_sidebar{
+      position:relative;
+      overflow: hidden;
+      @include flex(1 auto);
+      height:100%;
+    }
+    div.left_sidebar{
+      @include order(1);
+      &.collapse{
+        display:block;
+        @include flex(0 50px);
+      }
+    }
+    div.main_content{
+      @include order(2);
+      @include flex(6 0px);
+    }
+    div.right_sidebar{
+      @include flex(2 auto);
+      @include order(3);
+      &.collapse{
+        display:block;
+        @include flex(0 50px);
+      }
+    }
   }
 }
 
