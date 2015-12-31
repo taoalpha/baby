@@ -427,10 +427,18 @@ var Tasks = {
         //Tasks.todo(data)
         Helper.sayGoodBye(args)
       });
-      var todoList = Tasks.todo({"json":true})
-      socket.emit("todoData",todoList)
+      socket.on('giveMeTodoData', (data) => {
+        console.log("data")
+        var todoList = Tasks.todo({"json":true})
+        socket.emit("todoData",todoList)
+      });
       socket.on('bye', (data) => {
         console.log(data);
+      });
+      socket.on('writeTodo', (data) => {
+        var filepath = path.join(__dirname,'../data/.todo.json')
+        Helper.writeToFile(filepath,data)
+        console.log("Todo data file updated!")
       });
     });
     
