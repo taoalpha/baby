@@ -49,11 +49,11 @@ $bgSrc: "https://papaly.com/assets/speed_dial_backgrounds/speed_dial_bg_08-a197d
   &:before{
     content:"";
     display:block;
-    height:120%;
-    width: 120%;
+    height:100%;
+    width: 100%;
     background-image:linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url($bgSrc);
     background-attachment: fixed;
-    position: absolute;
+    position: fixed;
     top:0px;
     background-size: cover;
     -webkit-filter: blur(4px);
@@ -81,12 +81,12 @@ body{
   }
   div.wrapper {
     color:white;
+    overflow:hidden;
     height:100%;
     @include flexbox();
     flex-flow: row wrap;
     div.left_sidebar, div.right_sidebar{
       position:relative;
-      overflow: hidden;
       @include flex(1 auto);
       height:100%;
     }

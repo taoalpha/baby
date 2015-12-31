@@ -9,6 +9,7 @@ var Trie = require("../lib/trie")
 var http = require('http')
 var omelette = require("omelette");
 var Helper = require('./helper')
+var moment = require('moment');
 
 
 // agreement on this project
@@ -102,11 +103,11 @@ var Tasks = {
             Tasks.help("blog")
           }else{
             var tmpl = fs.readFileSync(scaffolds+tmplName,"utf-8")
-            var filepath = posts+new Date().toISOString().split("T")[0]+"-"+title.replace(/ /g,'-')+".md"
+            var filepath = posts+moment().format().split("T")[0]+"-"+title.replace(/ /g,'-')+".md"
             if(Helper.exists(args.c)){
               filepath = posts+args.c+"/"+title.toLowerCase().replace(/ /g,'-')+".md"
             }
-            tmpl = tmpl.replace("{{ date }}",new Date().toISOString().split(".")[0].replace("T"," "))
+            tmpl = tmpl.replace("{{ date }}",moment().format().split(".")[0].replace("T"," "))
             .replace('{{ title }}',title)
             Helper.writeToFile(filepath,tmpl,"text")
             console.log(`${Helper.Colors.FgGreen}Your post has created ans saved in: ${Helper.Colors.FgRed}${filepath} ${Helper.Colors.Reset}`)
@@ -389,7 +390,7 @@ var Tasks = {
     if(Helper.exists(args._[1])){
       pathname = path.join.apply(Helper.pathParser([process.cwd(),args._[1]]))
     }
-    Helper.exec('open http://localhost:8080/')
+    Helper.exec('open http://localhost:8000/')
     var handler = (request, response) => {
     
       var uri = url.parse(request.url).pathname
@@ -419,20 +420,21 @@ var Tasks = {
     }
     var app = http.createServer(handler)
     var io = require('socket.io')(app)
-    app.listen(8080);
+    app.listen(8000);
 
     io.on('connection', (socket) => {
       socket.on('exit', (data) => {
         //Tasks.todo(data)
         Helper.sayGoodBye(args)
       });
-      socket.on('getTodoList', (data) => {
-        var todoList = Tasks.todo({"json":true})
-        socket.emit("todoData",todoList)
+      var todoList = Tasks.todo({"json":true})
+      socket.emit("todoData",todoList)
+      socket.on('bye', (data) => {
+        console.log(data);
       });
     });
     
-    console.log("Static file server running at\n  => http://localhost:8080/\nCTRL + C to shutdown");
+    console.log("Static file server running at\n  => http://localhost:8000/\nCTRL + C to shutdown");
   },
   // put the display to sleep
   sleep : (args) => {
@@ -537,8 +539,8 @@ var Tasks = {
         if(answer.toLowerCase() == "y"){
           var data = {}
           data.total = 0
-          data.creationTime = new Date().toISOString()
-          data.lastUpdated = new Date().toISOString()
+          data.creationTime = moment().format()
+          data.lastUpdated = moment().format()
           data.data = {}
           data.oldData = {}
           data.doneItems = 0
@@ -571,7 +573,6 @@ var Tasks = {
           for(var dayItem in content.data){
             content.data[dayItem].items.map(function(v){
               var singleItem = {}
-              singleItem.pointer = v
               singleItem.content = v.content
               singleItem.status = v.status
               singleItem.done = v.done
@@ -588,7 +589,7 @@ var Tasks = {
             }
           })
         }
-        content.lastUpdated = new Date().toISOString()
+        content.lastUpdated = moment().format()
         Helper.writeToFile(filepath,content)
       }
       // special for json api
@@ -606,12 +607,13 @@ var Tasks = {
           newItem.content= args.a
           newItem.status = "ongoing"
           newItem.done = false
-          newItem.addTime = new Date().toISOString()
+          newItem.addTime = moment().format()
           var dateID = newItem.addTime.split("T")[0]
           content.data[dateID] = content.data[dateID] || {}
           content.data[dateID].doneItems = content.data[dateID].doneItems || 0
+          content.data[dateID].addTime = content.data[dateID].addTime || moment().format()
           content.data[dateID].items = content.data[dateID].items || []
-          content.data[dateID].items.push(newItem)
+          content.data[dateID].items.unshift(newItem)
           content.total += 1
           showList()
         }else{
@@ -632,7 +634,7 @@ var Tasks = {
         if(args.d !== true && parseInt(args.d) == parseInt(args.d)){
           allMapper[parseInt(args.d)].pointer.status = "done"
           allMapper[parseInt(args.d)].pointer.done = true
-          allMapper[parseInt(args.d)].pointer.doneTime = new Date().toISOString()
+          allMapper[parseInt(args.d)].pointer.doneTime = moment().format()
           allMapper[parseInt(args.d)].parent.doneItems += 1
           content.doneItems += 1
           showList()

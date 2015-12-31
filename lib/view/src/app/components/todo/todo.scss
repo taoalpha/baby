@@ -16,6 +16,7 @@
 }
 
 .todo{
+  overflow: scroll;
   &.collapse{
     .inputBox{width:100%;}
   }
