@@ -1,0 +1,226 @@
+/**
+ *  If you want to override some bootstrap variables, you have to change values here.
+ *  The list of variables are listed here bower_components/bootstrap-sass/assets/stylesheets/bootstrap/_variables.scss
+ */
+/* some mixins */
+/**
+ *  Do not remove the comments below. It's the markers used by wiredep to inject
+ *  sass dependencies when defined in the bower.json of your dependencies
+ */
+* {
+  outline: none; }
+
+.crystal {
+  background-color: rgba(0, 0, 0, 0.1); }
+  .crystal:before {
+    content: "";
+    display: block;
+    height: 100%;
+    width: 100%;
+    background-image: -webkit-linear-gradient(bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url("https://papaly.com/assets/speed_dial_backgrounds/speed_dial_bg_08-a197d5cf58247d02d8b7c526f56d4d5d.jpg");
+    background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url("https://papaly.com/assets/speed_dial_backgrounds/speed_dial_bg_08-a197d5cf58247d02d8b7c526f56d4d5d.jpg");
+    background-attachment: fixed;
+    position: fixed;
+    top: 0px;
+    background-size: cover;
+    -webkit-filter: blur(4px);
+    filter: blur(4px);
+    z-index: -1; }
+
+html, body {
+  height: 100%; }
+
+body {
+  min-height: 100%;
+  background-size: cover;
+  background-image: url("https://papaly.com/assets/speed_dial_backgrounds/speed_dial_bg_08-a197d5cf58247d02d8b7c526f56d4d5d.jpg"); }
+  body:before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0px;
+    z-index: -1; }
+  body div.wrapper {
+    color: white;
+    overflow: hidden;
+    height: 100%;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-flow: row wrap;
+        -ms-flex-flow: row wrap;
+            flex-flow: row wrap; }
+    body div.wrapper div.left_sidebar, body div.wrapper div.right_sidebar {
+      position: relative;
+      -webkit-box-flex: 1 auto;
+      -webkit-flex: 1 auto;
+      -ms-flex: 1 auto;
+      flex: 1 auto;
+      height: 100%; }
+    body div.wrapper div.left_sidebar {
+      -webkit-box-ordinal-group: 1;
+      -ms-flex-order: 1;
+      -webkit-order: 1;
+      order: 1; }
+      body div.wrapper div.left_sidebar.collapse {
+        display: block;
+        -webkit-box-flex: 0 50px;
+        -webkit-flex: 0 50px;
+        -ms-flex: 0 50px;
+        flex: 0 50px; }
+    body div.wrapper div.main_content {
+      -webkit-box-ordinal-group: 2;
+      -ms-flex-order: 2;
+      -webkit-order: 2;
+      order: 2;
+      -webkit-box-flex: 6 0px;
+      -webkit-flex: 6 0px;
+      -ms-flex: 6 0px;
+      flex: 6 0px; }
+    body div.wrapper div.right_sidebar {
+      -webkit-box-flex: 2 auto;
+      -webkit-flex: 2 auto;
+      -ms-flex: 2 auto;
+      flex: 2 auto;
+      -webkit-box-ordinal-group: 3;
+      -ms-flex-order: 3;
+      -webkit-order: 3;
+      order: 3; }
+      body div.wrapper div.right_sidebar.collapse {
+        display: block;
+        -webkit-box-flex: 0 50px;
+        -webkit-flex: 0 50px;
+        -ms-flex: 0 50px;
+        flex: 0 50px; }
+
+/**
+ *  Do not remove the comments below. It's the markers used by gulp-inject to inject
+ *  all your sass files automatically
+ */
+::-webkit-input-placeholder {
+  color: #ddd; }
+
+:-moz-placeholder {
+  /* Firefox 18- */
+  color: #ddd; }
+
+::-moz-placeholder {
+  /* Firefox 19+ */
+  color: #ddd; }
+
+:-ms-input-placeholder {
+  color: #ddd; }
+
+.todo {
+  overflow: scroll; }
+  .todo.collapse .inputBox {
+    width: 100%; }
+  .todo .inputBox {
+    width: 80%;
+    margin: 50px auto 0;
+    position: relative; }
+    .todo .inputBox span {
+      position: absolute;
+      top: 0px;
+      line-height: 50px;
+      width: 50px;
+      text-align: center;
+      color: #ccc; }
+    .todo .inputBox span.collapseButton {
+      left: -50px; }
+    .todo .inputBox input {
+      width: 100%;
+      height: 50px;
+      outline: 0px;
+      color: #4d4d4d;
+      padding: 10px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border: 1px solid #ccc; }
+      .todo .inputBox input:focus {
+        background-color: rgba(255, 255, 255, 0.1); }
+    .todo .inputBox span.addButton {
+      right: 0px; }
+  .todo .todoList {
+    width: 80%;
+    margin: auto;
+    padding-top: 30px;
+    border-left: 1px solid #ccc;
+    position: relative; }
+    .todo .todoList .allItems .dayItem {
+      padding-left: 30px;
+      margin-top: 20px;
+      border-top: 1px solid #ccc;
+      border-right: 1px solid #ccc;
+      position: relative; }
+      .todo .todoList .allItems .dayItem.done:after {
+        content: "\e013";
+        color: #2DF32D; }
+      .todo .todoList .allItems .dayItem:after {
+        content: "\e023";
+        color: #ddd; }
+      .todo .todoList .allItems .dayItem:before, .todo .todoList .allItems .dayItem:after {
+        font-family: 'Glyphicons Halflings';
+        position: absolute;
+        left: -8px;
+        top: -8px;
+        width: 16px;
+        height: 16px; }
+      .todo .todoList .allItems .dayItem:before {
+        content: " ";
+        background-image: -webkit-linear-gradient(bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url("https://papaly.com/assets/speed_dial_backgrounds/speed_dial_bg_08-a197d5cf58247d02d8b7c526f56d4d5d.jpg");
+        background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url("https://papaly.com/assets/speed_dial_backgrounds/speed_dial_bg_08-a197d5cf58247d02d8b7c526f56d4d5d.jpg");
+        background-attachment: fixed;
+        background-size: cover;
+        -webkit-filter: blur(4px);
+        filter: blur(4px); }
+      .todo .todoList .allItems .dayItem h2 {
+        padding: 10px 0 10px 20px;
+        border-left: 1px solid #ccc;
+        font-size: 15px;
+        margin: 0px;
+        background-color: rgba(255, 255, 255, 0.3); }
+        .todo .todoList .allItems .dayItem h2 span {
+          float: right;
+          padding-right: 10px; }
+      .todo .todoList .allItems .dayItem .singleItem {
+        padding: 10px 20px;
+        border-left: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        position: relative;
+        line-height: 20px;
+        cursor: pointer; }
+        .todo .todoList .allItems .dayItem .singleItem.done {
+          text-decoration: line-through;
+          color: #ccc; }
+        .todo .todoList .allItems .dayItem .singleItem:hover span.btns {
+          display: block; }
+        .todo .todoList .allItems .dayItem .singleItem span.btns {
+          display: none;
+          position: absolute;
+          right: 10px;
+          top: 0px;
+          color: #ccc;
+          line-height: 40px;
+          text-align: center; }
+          .todo .todoList .allItems .dayItem .singleItem span.btns i.done {
+            color: #2DF32D; }
+            .todo .todoList .allItems .dayItem .singleItem span.btns i.done:hover {
+              color: #2DF32D; }
+          .todo .todoList .allItems .dayItem .singleItem span.btns i {
+            width: 25px; }
+            .todo .todoList .allItems .dayItem .singleItem span.btns i:hover {
+              color: white; }
+    .todo .todoList:after {
+      content: "\e005";
+      font-family: 'Glyphicons Halflings';
+      position: absolute;
+      bottom: -10px;
+      left: -10px;
+      width: 20px;
+      height: 20px;
+      color: #ccc; }
+
+/*# sourceMappingURL=maps/main.css.map */

@@ -386,7 +386,7 @@ var Tasks = {
   },
   // create a http server with specific directory
   serve : (args) => {
-    var pathname = path.join(__dirname,'../lib/angular/')
+    var pathname = path.join(__dirname,'../lib/babyUI/dist/')
     if(Helper.exists(args._[1])){
       pathname = path.join.apply(Helper.pathParser([process.cwd(),args._[1]]))
     }
@@ -395,15 +395,18 @@ var Tasks = {
     
       var uri = url.parse(request.url).pathname
         , filename = path.join(pathname, uri);
+
+      console.log(filename)
       
-      var filestatus = Helper.fileExists(filename,'dir')
-      if(!filestatus) {
+      var dirstatus = Helper.fileExists(filename,'dir')
+      var filestatus = Helper.fileExists(filename)
+      if(!dirstatus && !filestatus) {
         response.writeHead(404, {"Content-Type": "text/plain"});
         response.write("404 Not Found\n");
         response.end();
         return;
       }
-    
+
       if (fs.statSync(filename).isDirectory()) filename += '/index.html';
     
       fs.readFile(filename, (err, file) => {
@@ -428,12 +431,11 @@ var Tasks = {
         Helper.sayGoodBye(args)
       });
       socket.on('giveMeTodoData', (data) => {
-        console.log("data")
-        var todoList = Tasks.todo({"json":true})
+        var filepath = path.join(__dirname,'../data/.todo.json')
+        var todoList = JSON.parse(fs.readFileSync(filepath))
         socket.emit("todoData",todoList)
       });
       socket.on('bye', (data) => {
-        console.log(data);
       });
       socket.on('writeTodo', (data) => {
         var filepath = path.join(__dirname,'../data/.todo.json')
@@ -602,7 +604,7 @@ var Tasks = {
       }
       // special for json api
       if(args.json){
-        return content
+        return filepath
       }
       // special for only `bb t`
       if(Object.keys(args).length == 2){

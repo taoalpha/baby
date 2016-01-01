@@ -1,0 +1,52 @@
+{
+  "name": "baby-ui",
+  "description": "UI for baby",
+  "main": "index.js",
+  "authors": [
+    "taoalpha"
+  ],
+  "license": "ISC",
+  "keywords": [
+    "baby",
+    "UI"
+  ],
+  "homepage": "https://github.com/taoalpha/baby",
+  "moduleType": [
+    "es6",
+    "node"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.4.8",
+    "animate.css": "~3.5.0",
+    "reset-css": "~2.0.2011012602",
+    "moment": "~2.10.6",
+    "angular-animate": "~1.4.8",
+    "angular-ui-router": "~0.2.15",
+    "angular-toastr": "~1.6.0",
+    "socket.io-client": "~1.3.7",
+    "bootstrap": "~3.3.6"
+  },
+  "overrides": {
+    "bootstrap": {
+      "main": [
+        "dist/css/bootstrap.min.css",
+        "dist/fonts/glyphicons-halflings-regular.eot",
+        "dist/fonts/glyphicons-halflings-regular.svg",
+        "dist/fonts/glyphicons-halflings-regular.ttf",
+        "dist/fonts/glyphicons-halflings-regular.woff",
+        "dist/fonts/glyphicons-halflings-regular.woff2"
+      ]
+    },
+    "socket.io-client": {
+      "main": "socket.io.js"
+    }
+  }
+}
