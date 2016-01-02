@@ -507,7 +507,7 @@ var Tasks = {
       if(Object.keys(summaryReport.coding.days).length > logdays){
         var prev = new Date((new Date()).setDate((new Date()).getDate()-logdays)).toLocaleDateString()
         for(var i in summaryReport.coding.days){
-          if(i<prev){
+          if(new Date(i)<new Date(prev)){
             delete summaryReport.coding.days[i]
           }
         }
