@@ -3,3 +3,4 @@ bower_components/
 dist/
 data/.*.json
 bin/.*.json
+data/bak/

@@ -1,16 +1,15 @@
 <div class="crystal right_sidebar"  ng-class="{'collapse':tm.collapse}">
-  <div class="inputBox">
+  <form class="inputBox" ng-submit="tm.addTodo(tm.todo)">
     <span class="collapseButton" ng-click="tm.toggleCollapse()"><i class="glyphicon glyphicon-hand-right" ng-class="{'collapse':tm.collapse}"></i></span>
-    <input type="text" name="todoInput" ng-model="tm.todo.content" placeholder="What needs to be done?" ng-show="!tm.collapse">
+    <input type="text" name="todoInput" ng-model="tm.todo.content" placeholder="What needs to be done?" ng-show="!tm.collapse" required>
     <span class="addButton" ng-click="tm.addTodo(tm.todo)"><i class="glyphicon glyphicon-plus"></i></span>
-  </div>
+  </form>
   <div class="todoList" ng-show="!tm.collapse">
     <ul class="allItems">
-      <li class="dayItem" ng-repeat="(itemdate, dayItem) in tm.todoData.data" ng-class="{'done':dayItem.doneItems==dayItem.items.length}">
+      <li class="dayItem" ng-repeat="(itemdate, dayItem) in tm.showTodoData.data track by itemdate" ng-class="{'done':dayItem.doneItems==dayItem.items.length}" on-finish-render="outer">
         <ul class="itemOfDay">
-          <!-- use controller functions to do complex logic things -->
           <h2 ng-click="dayItem.expandItem = !dayItem.expandItem">{{itemdate | date: 'EEEE, MMM d, y'}}<span>{{dayItem.items.length}} Item(s)</span></h2>
-          <li class="singleItem" ng-repeat="single in dayItem.items" ng-show="dayItem.expandItem" ng-class="{'done':single.done}">
+          <li class="singleItem" ng-repeat="single in dayItem.items track by single.addTime" ng-show="dayItem.expandItem" ng-class="{'done':single.done}">
             <span class="content">{{ single.content }}</span>
             <span class="btns"><i class="glyphicon glyphicon-ok" ng-class="{'done':single.done}" ng-click="tm.toggleDone(itemdate,$index)"></i><i class="glyphicon glyphicon-remove" ng-click='tm.deleteTodo(itemdate,$index)'></i></span>
           </li>

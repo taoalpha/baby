@@ -137,6 +137,7 @@ body{
 }
 
 .todo{
+  max-width: 550px;
   overflow: scroll;
   &.collapse{
     .inputBox{width:100%;}
@@ -154,6 +155,7 @@ body{
       color:#ccc;
     }
     span.collapseButton{
+      cursor:pointer;
       left:-50px;
     }
     input{
@@ -169,6 +171,7 @@ body{
       }
     }
     span.addButton{
+      cursor:pointer;
       right:0px;
     }
   }
@@ -210,6 +213,7 @@ body{
           filter: blur(4px);
         }
         h2{
+          cursor:pointer;
           padding:10px 0 10px 20px;
           border-left:1px solid #ccc;
           font-size: 15px;
@@ -271,3 +275,104 @@ body{
     }
   }
 }
+
+
+
+
+$border-colour:#CCC;
+$secondary-colour:#2875C7;
+$spacing:10px;
+$icon-width:40px;
+$header-height:40px;
+
+
+.widget{
+    float:left;
+    display:block;
+    background:white;
+    width:300px;
+    border:solid 1px $border-colour;
+    margin-bottom:10px;
+    
+    div.header {
+        float:left;
+        width:100%;
+        background:$secondary-colour;
+        height:$header-height;
+        color:white;
+        
+        i {
+            float:left;
+            width:$icon-width;
+            font-size:1.125em;
+            font-weight:bold;
+            position:relative;
+            padding:0 $spacing;
+            cursor:pointer;
+        }
+        
+        i.fa-angle-left {
+            text-align:left;
+        }
+        
+        i.fa-angle-right {
+            text-align:right;
+            margin-left:$icon-width*-1;
+        }
+        
+        span { 
+            float:left;
+            width:100%;
+            font-weight:bold;
+            text-transform:uppercase;
+            padding-left:$icon-width+$spacing;
+            margin-left:$icon-width*-1;
+            text-align:center;
+            padding-right:$icon-width;
+            color:inherit;
+        }
+    }
+    div.week {
+        float:left;
+        width:100%;
+        border-top:solid 1px $border-colour;
+        
+        &:first-child {
+            border-top:none;
+        }
+        
+        span.day {
+            float:left;
+            width:100%/7;
+            border-left:solid 1px $border-colour;
+            font-size:0.75em;
+            text-align:center;
+            background:white;
+            cursor:pointer;
+            color:black;
+            
+            &:first-child {
+                border-left:none;
+            }
+            
+            &.today {
+                background:#E3F2FF;
+            }
+            
+            &.different-month {
+                color:#C0C0C0;
+            }
+            
+            &.selected {
+                background:$secondary-colour;
+                color:white;
+            }
+        }
+        
+        &.names>span {
+            color:$secondary-colour;
+            font-weight:bold;
+        }
+    }
+}
+
