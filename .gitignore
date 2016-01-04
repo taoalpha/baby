@@ -4,3 +4,4 @@ dist/
 data/.*.json
 bin/.*.json
 data/bak/
+starter/

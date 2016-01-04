@@ -1,0 +1,20 @@
+<div class="crystal left_sidebar"  ng-class="{'collapse':rm.collapse}">
+  <form class="inputBox" ng-submit="rm.doFeed(rm.todo)">
+    <span class="collapseButton" ng-click="rm.toggleCollapse()"><i class="glyphicon glyphicon-hand-left" ng-class="{'collapse':rm.collapse}"></i></span>
+    <input type="text" name="todoInput" ng-model="rm.feed.content" placeholder="Input to add or search feeds" ng-show="!rm.collapse" required>
+    <span class="addButton" ng-click="rm.doFeed(rm.feed)"><i class="glyphicon glyphicon-plus"></i></span>
+  </form>
+  <div class="todoList" ng-show="!rm.collapse">
+    <ul class="allItems">
+      <li class="dayItem" ng-repeat="(itemdate, dayItem) in rm.showTodoData.data track by itemdate" ng-class="{'done':dayItem.doneItems==dayItem.items.length}" on-finish-render="outer">
+        <ul class="itemOfDay">
+          <h2 ng-click="dayItem.expandItem = !dayItem.expandItem">{{itemdate | date: 'EEEE, MMM d, y'}}<span>{{dayItem.items.length}} Item(s)</span></h2>
+          <li class="singleItem" ng-repeat="single in dayItem.items track by single.addTime" ng-show="dayItem.expandItem" ng-class="{'done':single.done}">
+            <span class="content">{{ single.content }}</span>
+            <span class="btns"><i class="glyphicon glyphicon-ok" ng-class="{'done':single.done}" ng-click="rm.toggleDone(itemdate,$index)"></i><i class="glyphicon glyphicon-remove" ng-click='rm.deleteTodo(itemdate,$index)'></i></span>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</div>

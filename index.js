@@ -430,6 +430,12 @@ class Baby{
         //Tasks.todo(data)
         Helper.sayGoodBye(args)
       });
+      socket.on('giveMeSummaryData', (data) => {
+        var filepath = path.join(__dirname,'./data/.gSummary.json')
+        var summaryData = JSON.parse(fs.readFileSync(filepath))
+        socket.emit("summaryData",summaryData)
+      });
+
       socket.on('giveMeTodoData', (data) => {
         var filepath = path.join(__dirname,'./data/.todo.json')
         var todoList = JSON.parse(fs.readFileSync(filepath))
@@ -506,7 +512,7 @@ class Baby{
       var summaryReport = require(filepath)
       var today = new Date().toLocaleDateString()
       // clean the log and keep records up to 30 days || config.LOGDAYS
-      var logdays = args.CONFIG.logdays || 30
+      var logdays = args.CONFIG.logdays || 60
       if(Object.keys(summaryReport.coding.days).length > logdays){
         var prev = new Date((new Date()).setDate((new Date()).getDate()-logdays)).toLocaleDateString()
         for(var i in summaryReport.coding.days){
