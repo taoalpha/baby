@@ -248,6 +248,10 @@ body{
           &:hover span.btns{
             display: block;
           }
+          span.content{
+            width:90%;
+            display:block;
+          }
           span.btns{
             display:  none;
             position: absolute;
