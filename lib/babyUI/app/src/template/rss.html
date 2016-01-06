@@ -1,17 +1,20 @@
-<div class="crystal left_sidebar"  ng-class="{'collapse':rm.collapse}">
-  <form class="inputBox" ng-submit="rm.doFeed(rm.todo)">
-    <span class="collapseButton" ng-click="rm.toggleCollapse()"><i class="glyphicon glyphicon-hand-left" ng-class="{'collapse':rm.collapse}"></i></span>
-    <input type="text" name="todoInput" ng-model="rm.feed.content" placeholder="Input to add or search feeds" ng-show="!rm.collapse" required>
-    <span class="addButton" ng-click="rm.doFeed(rm.feed)"><i class="glyphicon glyphicon-plus"></i></span>
+<div class="crystal left_sidebar"  ng-class="{'collapse':rss.collapse}">
+  <form class="inputBox" ng-submit="rss.doFeed(rss.feed)">
+    <span class="collapseButton" ng-click="rss.toggleCollapse()"><i class="glyphicon glyphicon-hand-left" ng-class="{'collapse':rss.collapse}"></i></span>
+    <input type="text" name="feedOrder" ng-model="rss.feed.order" placeholder="Input to add or search feeds" ng-show="!rss.collapse" required>
+    <span class="addButton" ng-click="rss.doFeed(rss.feed)"><i class="glyphicon glyphicon-plus"></i></span>
   </form>
-  <div class="todoList" ng-show="!rm.collapse">
+  <div class="feedList" ng-show="!rss.collapse">
     <ul class="allItems">
-      <li class="dayItem" ng-repeat="(itemdate, dayItem) in rm.showTodoData.data track by itemdate" ng-class="{'done':dayItem.doneItems==dayItem.items.length}" on-finish-render="outer">
-        <ul class="itemOfDay">
-          <h2 ng-click="dayItem.expandItem = !dayItem.expandItem">{{itemdate | date: 'EEEE, MMM d, y'}}<span>{{dayItem.items.length}} Item(s)</span></h2>
-          <li class="singleItem" ng-repeat="single in dayItem.items track by single.addTime" ng-show="dayItem.expandItem" ng-class="{'done':single.done}">
-            <span class="content">{{ single.content }}</span>
-            <span class="btns"><i class="glyphicon glyphicon-ok" ng-class="{'done':single.done}" ng-click="rm.toggleDone(itemdate,$index)"></i><i class="glyphicon glyphicon-remove" ng-click='rm.deleteTodo(itemdate,$index)'></i></span>
+      <li class="feedItem" ng-repeat="feedItem in rss.feedData track by $index" on-finish-render="outer" ng-init="outerIndex=$index">
+        <ul class="itemOfFeed">
+          <h2 ng-click="rss.expandItem($index)">
+            <span class="title">{{feedItem.title}}</span>
+            <span>{{feedItem.entries.length}} Item(s)</span>
+          </h2>
+          <li class="singleItem" ng-repeat="single in feedItem.entries track by $index" ng-if="rss.expandList[outerIndex]" ng-class="{'read':single.done}">
+            <a href="{{single.link}}" target="_blank" class="title">{{ single.title }}</a>
+            <span class="btns"></span>
           </li>
         </ul>
       </li>

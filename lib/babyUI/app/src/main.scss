@@ -178,6 +178,23 @@ body{
     cursor:pointer;
     right:-50px;
   }
+  .feedList{
+    .feedItem{
+      h2{
+        span.title {
+          width:70%;
+          overflow:hidden;
+          float:initial !important;
+          display:inline-block;
+        }
+      }
+      .singleItem{
+        a{
+          color:white;
+        }
+      }
+    }
+  }
 }
 
 .todo{
@@ -185,14 +202,16 @@ body{
     cursor:pointer;
     left:-50px;
   }
-  .todoList{
+}
+.todo,.rss{
+  .todoList,.feedList{
     width:80%;
     margin:auto;
     padding-top:30px;
     border-left:1px solid #ccc;
     position: relative;
     .allItems{
-      .dayItem{
+      .dayItem,.feedItem{
         padding-left: 30px;
         margin-top:20px;
         border-top:1px solid #ccc;
@@ -240,7 +259,7 @@ body{
           border-bottom:1px solid #ccc;
           position: relative;
           line-height:20px;
-          cursor:pointer;
+          cursor:pointer; 
           &.done{
             text-decoration:line-through;
             color:#ccc;

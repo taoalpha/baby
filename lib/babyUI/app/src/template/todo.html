@@ -6,7 +6,7 @@
   </form>
   <div class="todoList" ng-show="!tm.collapse">
     <ul class="allItems">
-      <li class="dayItem" ng-repeat="(itemdate, dayItem) in tm.showTodoData.data track by itemdate" ng-class="{'done':dayItem.doneItems==dayItem.items.length}" on-finish-render="outer">
+      <li class="dayItem" ng-repeat="(itemdate, dayItem) in tm.showTodoData.data track by itemdate" ng-class="{'done':dayItem.doneItems==dayItem.items.length}" on-finish-render="">
         <ul class="itemOfDay">
           <h2 ng-click="dayItem.expandItem = !dayItem.expandItem">{{itemdate | date: 'EEEE, MMM d, y'}}<span>{{dayItem.items.length}} Item(s)</span></h2>
           <li class="singleItem" ng-repeat="single in dayItem.items track by single.addTime" ng-show="dayItem.expandItem" ng-class="{'done':single.done}">

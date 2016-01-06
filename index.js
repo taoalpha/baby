@@ -448,6 +448,39 @@ class Baby{
         Helper.writeToFile(filepath,data)
         console.log("Todo data file updated!")
       });
+      socket.on("giveMeFeedData", () => {
+        var FeedSpider = require('./lib/feedAPI')
+        var feed = new FeedSpider()
+        var allData = {}
+        feed.db.open((err, db) =>{
+          // list stored with all promises
+          var promises = []
+        
+          var user = {
+            useremail: "iamzhoutao92@gmail.com",
+            userpass: "zhou1992"
+          }
+          feed.find(feed.userC,user,{subscribe:1,'_id':0}).toArray().then((data) => {
+            feed.find(feed.siteC,{feedUrl:{$in : data[0].subscribe}},{feedUrl:1,title:1,link:1}).toArray().then( (data) =>{
+              data.forEach( (item) => {
+                allData[item.feedUrl] = {}
+                allData[item.feedUrl].title = item.title
+                allData[item.feedUrl].link = item.link
+                promises.push(feed.getDataByFeed(item.feedUrl,allData))
+              })
+            })
+            .then( ()=>{
+              Promise.all(promises).then( (data) => {
+                socket.emit("feedData",allData)
+                db.close()
+              },(reason) => {
+                socket.emit("feedData",reason)
+                db.close()
+              })
+            })
+          })
+        })
+      })
     });
     
     console.log("Static file server running at\n  => http://localhost:8000/\nCTRL + C to shutdown");
