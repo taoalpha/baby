@@ -1,8 +1,8 @@
 <div class="crystal left_sidebar"  ng-class="{'collapse':rss.collapse}">
-  <form class="inputBox" ng-submit="rss.doFeed(rss.feed)">
+  <form class="inputBox" ng-submit="rss.doFeed('add',rss.feed)">
     <span class="collapseButton" ng-click="rss.toggleCollapse()"><i class="glyphicon glyphicon-hand-left" ng-class="{'collapse':rss.collapse}"></i></span>
-    <input type="text" name="feedOrder" ng-model="rss.feed.order" placeholder="Input to add or search feeds" ng-show="!rss.collapse" required>
-    <span class="addButton" ng-click="rss.doFeed(rss.feed)"><i class="glyphicon glyphicon-plus"></i></span>
+    <input type="text" name="feedOrder" ng-model="rss.feed.content" placeholder="Input to add or search feeds" ng-show="!rss.collapse" required>
+    <span class="addButton" ng-click="rss.doFeed('add',rss.feed)"><i class="glyphicon glyphicon-plus"></i></span>
   </form>
   <div class="feedList" ng-show="!rss.collapse">
     <ul class="allItems">

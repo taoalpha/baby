@@ -482,6 +482,20 @@ class Baby{
           })
         })
       })
+      socket.on("addFeed",(data) =>{
+        console.log("Got msg")
+        feed.db.open((err, db) =>{
+          feed.crawler(data.content).then( ()=>{
+            console.log(feed.stats)
+            console.log("closing db")
+            db.close()
+          },(reason)=>{
+            console.log(reason)
+            console.log("closing db")
+            db.close()
+          })
+        })
+      })
       socket.on("feedClick",(data) =>{
         feed.db.open((err, db) =>{
           feed.markRead(data.user,data.fid).then( ()=>{
