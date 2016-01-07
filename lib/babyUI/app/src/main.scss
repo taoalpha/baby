@@ -192,6 +192,10 @@ body{
         a{
           color:white;
         }
+        &.read a{
+          color:#ccc;
+          text-decoration:line-through;
+        }
       }
     }
   }
@@ -245,6 +249,7 @@ body{
           cursor:pointer;
           padding:10px 0 10px 20px;
           border-left:1px solid #ccc;
+          border-bottom: 1px solid #ccc;
           font-size: 15px;
           margin: 0px;
           background-color:rgba(255,255,255,0.3);

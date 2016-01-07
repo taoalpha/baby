@@ -18,6 +18,6 @@
       <span class="day">Sat</span>
   </div>
   <div class="week" ng-repeat="week in wm.weeks">
-    <span class="day" ng-click="wm.showStat(day)" ng-class="{ today: day.isToday, 'different-month': !day.isCurrentMonth, selected: day.date.isSame(wm.selected) }" ng-repeat="day in week.days">{{day.number}}</span>
+    <span class="day" ng-click="wm.showStat(day)" ng-class="{ today: day.isToday, 'different-month': !day.isCurrentMonth, selected: day.date.isSame(wm.selected,'day') }" ng-repeat="day in week.days">{{day.number}}</span>
   </div>
 </div>

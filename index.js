@@ -448,9 +448,10 @@ class Baby{
         Helper.writeToFile(filepath,data)
         console.log("Todo data file updated!")
       });
+
+      var FeedSpider = require('./lib/feedAPI')
+      var feed = new FeedSpider()
       socket.on("giveMeFeedData", () => {
-        var FeedSpider = require('./lib/feedAPI')
-        var feed = new FeedSpider()
         var allData = {}
         feed.db.open((err, db) =>{
           // list stored with all promises
@@ -460,24 +461,31 @@ class Baby{
             useremail: "iamzhoutao92@gmail.com",
             userpass: "zhou1992"
           }
-          feed.find(feed.userC,user,{subscribe:1,'_id':0}).toArray().then((data) => {
-            feed.find(feed.siteC,{feedUrl:{$in : data[0].subscribe}},{feedUrl:1,title:1,link:1}).toArray().then( (data) =>{
-              data.forEach( (item) => {
+          feed.getUserData(user).then( (userdata) => {
+            feed.getSiteBySub(userdata.subscribe).then( (data) =>{
+              data.forEach( (item) =>{
                 allData[item.feedUrl] = {}
                 allData[item.feedUrl].title = item.title
                 allData[item.feedUrl].link = item.link
-                promises.push(feed.getDataByFeed(item.feedUrl,allData))
+                allData[item.feedUrl].entries = []
+                promises.push(feed.getDataByFeed(item.feedUrl,allData,userdata.read))
               })
-            })
-            .then( ()=>{
-              Promise.all(promises).then( (data) => {
+            }).then( ()=>{
+              Promise.all(promises).then( (data) =>{
                 socket.emit("feedData",allData)
                 db.close()
-              },(reason) => {
+              },(reason)=>{
                 socket.emit("feedData",reason)
                 db.close()
               })
             })
+          })
+        })
+      })
+      socket.on("feedClick",(data) =>{
+        feed.db.open((err, db) =>{
+          feed.markRead(data.user,data.fid).then( ()=>{
+            db.close()
           })
         })
       })
