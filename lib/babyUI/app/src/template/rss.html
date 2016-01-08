@@ -6,16 +6,17 @@
   </form>
   <div class="feedList" ng-show="!rss.collapse">
     <ul class="allItems">
-      <li class="feedItem" ng-repeat="feedItem in rss.feedData track by $index" on-finish-render="outer" ng-init="outerIndex=$index">
+      <li class="feedItem" ng-repeat="(feedUrl,feedItem) in rss.feedData track by $index" on-finish-render="outer" ng-init="outerIndex=$index">
         <h2 ng-click="rss.expandItem($index)">
           <span class="title">{{feedItem.title}}</span>
-          <span>{{feedItem.entries.length}} Item(s)</span>
+          <span class="unreadNum" ng-show="feedItem.unreadNum != 0">{{feedItem.unreadNum}}</span>
         </h2>
         <ul class="itemOfFeed" ng-show="outerIndex == rss.expandIndex" >
           <li class="singleItem" ng-repeat="single in feedItem.entries track by $index" ng-class="{'read':single.read==1}">
-            <a href="{{single.link}}" target="_blank" class="title" ng-click="rss.feedClick(single)">{{ single.title }}</a>
+            <a href="{{single.link}}" target="_blank" class="title" ng-click="rss.itemClick(single,feedUrl)">{{ single.title }}</a>
             <span class="btns"></span>
           </li>
+          <li class="loadMore singleItem" ng-click="rss.getMore(feedUrl)">More</li>
         </ul>
       </li>
     </ul>

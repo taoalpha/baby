@@ -451,8 +451,9 @@ class Baby{
 
       var FeedSpider = require('./lib/feedAPI')
       var feed = new FeedSpider()
+      var allData = {}
+      var userData = {}
       socket.on("giveMeFeedData", () => {
-        var allData = {}
         feed.db.open((err, db) =>{
           // list stored with all promises
           var promises = []
@@ -461,14 +462,15 @@ class Baby{
             useremail: "iamzhoutao92@gmail.com",
             userpass: "zhou1992"
           }
-          feed.getUserData(user).then( (userdata) => {
-            feed.getSiteBySub(userdata.subscribe).then( (data) =>{
+          feed.getUserData(user).then( (curUser) => {
+            userData = curUser
+            feed.getSiteBySub(curUser.subscribe).then( (data) =>{
               data.forEach( (item) =>{
                 allData[item.feedUrl] = {}
                 allData[item.feedUrl].title = item.title
                 allData[item.feedUrl].link = item.link
                 allData[item.feedUrl].entries = []
-                promises.push(feed.getDataByFeed(item.feedUrl,allData,userdata.read))
+                promises.push(feed.getDataByFeed(item.feedUrl,allData,curUser.read))
               })
             }).then( ()=>{
               Promise.all(promises).then( (data) =>{
@@ -499,6 +501,18 @@ class Baby{
       socket.on("feedClick",(data) =>{
         feed.db.open((err, db) =>{
           feed.markRead(data.user,data.fid).then( ()=>{
+            db.close()
+          })
+        })
+      })
+      socket.on("loadMoreFeed",(data) =>{
+        var moreData = {}
+        moreData[data.feedUrl] = {}
+        moreData[data.feedUrl].entries = []
+        feed.db.open((err, db) =>{
+          feed.getDataByFeed(data.feedUrl,moreData,userData.read,10,data.curNum).then( (data)=>{
+            console.log(moreData)
+            socket.emit("moreFeed",moreData)
             db.close()
           })
         })
