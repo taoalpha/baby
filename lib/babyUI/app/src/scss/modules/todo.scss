@@ -1,0 +1,69 @@
+.todo{
+  max-width: 550px;
+  .lv-header{
+    .collapseButton{
+      left:-50px;
+    }
+  }
+  .lv-container{
+    .lv-itembox{
+      &.done:after{
+        content:"\f00c";
+        color:#2DF32D;
+      }
+      &:after{
+        content:"\f017";
+        color:#ddd;
+      }
+      &:before,&:after{
+        font-family: 'FontAwesome';
+        position: absolute;
+        left: -8px;
+        top: -8px;
+        width:16px;
+        height:16px;
+      }
+      &:before{
+        content: " ";
+        background-image:linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url($bgSrc);
+        background-attachment: fixed;
+        background-size: cover;
+        filter: blur(4px);
+      }
+    }
+    .lv-item{
+      &.done{
+        text-decoration:line-through;
+        color:#ccc;
+      }
+      &:hover span.btns{
+        display: block;
+      }
+      span.content{
+        width:90%;
+        display:block;
+      }
+      span.btns{
+        display:  none;
+        position: absolute;
+        right:10px;
+        top:0px;
+        color:#ccc;
+        line-height:40px;
+        text-align:center;
+        i.done{
+          color:#2DF32D;
+          &:hover{
+            color:#2DF32D;
+          }
+        }
+        i{
+          width:25px;
+          &:hover{
+            color:white;
+          }
+        }
+      }
+    }
+  }
+}

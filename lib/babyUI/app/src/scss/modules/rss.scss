@@ -1,0 +1,35 @@
+.rss{
+  height: 100%;
+  >div{max-width: 450px;}
+  span.collapseButton{
+    cursor:pointer;
+    right:-50px;
+  }
+  .lv-container{
+    .lv-item-title{
+      span.title {
+        width:70%;
+        overflow:hidden;
+        float:initial !important;
+        display:inline-block;
+      }
+    }
+    .lv-item{
+      a{
+        color:white;
+        text-decoration:none;
+        font-size:14px;
+        &:hover{
+          color:#ddd;
+        }
+      }
+      &.read a{
+        color:#ccc;
+        text-decoration:line-through;
+      }
+      &.loadMore{
+        text-align:center;
+      }
+    }
+  }
+}

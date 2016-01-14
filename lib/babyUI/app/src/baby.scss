@@ -5,6 +5,7 @@
 @import './scss/theme'; // theme of the site
 @import './scss/layout'; // layout of the site
 // import all modules
+@import "./scss/modules/listview";
 @import './scss/modules/rss';
 @import './scss/modules/widget';
 @import './scss/modules/todo';

@@ -1,15 +1,15 @@
-<div class="crystal right_sidebar"  ng-class="{'collapse':tm.collapse}">
-  <form class="inputBox" ng-submit="tm.addTodo(tm.todo)">
+<div class="crystal listview"  ng-class="{'collapse':tm.collapse}">
+  <form class="lv-header" ng-submit="tm.addTodo(tm.todo)">
     <span class="collapseButton" ng-click="tm.toggleCollapse()"><i class="fa fa-hand-o-right" ng-class="{'collapse':tm.collapse}"></i></span>
     <input type="text" name="todoInput" ng-model="tm.todo.content" placeholder="What needs to be done?" ng-show="!tm.collapse" required>
     <span class="addButton" ng-click="tm.addTodo(tm.todo)"><i class="fa fa-plus"></i></span>
   </form>
-  <div class="todoList" ng-show="!tm.collapse">
-    <ul class="allItems">
-      <li class="dayItem" ng-repeat="(itemdate, dayItem) in tm.showTodoData.data track by itemdate" ng-class="{'done':dayItem.doneItems==dayItem.items.length}" on-finish-render="">
-        <ul class="itemOfDay">
-          <h2 class='normal' ng-class="{'selected':dayItem.expandItem}" ng-click="dayItem.expandItem = !dayItem.expandItem">{{itemdate | date: 'EEEE, MMM d, y'}}<span>{{dayItem.items.length}} Item(s)</span></h2>
-          <li class="singleItem" ng-repeat="single in dayItem.items track by single.addTime" ng-show="dayItem.expandItem" ng-class="{'done':single.done}">
+  <div class="lv-container" ng-show="!tm.collapse">
+    <ul>
+      <li class="lv-itembox" ng-repeat="(itemdate, dayItem) in tm.showTodoData.data track by itemdate" ng-class="{'done':dayItem.doneItems==dayItem.items.length}" on-finish-render="">
+        <ul>
+          <h2 class='normal lv-item-title' ng-class="{'selected':dayItem.expandItem}" ng-click="dayItem.expandItem = !dayItem.expandItem">{{itemdate | date: 'EEEE, MMM d, y'}}<span>{{dayItem.items.length}} Item(s)</span></h2>
+          <li class="lv-item" ng-repeat="single in dayItem.items track by single.addTime" ng-show="dayItem.expandItem" ng-class="{'done':single.done}">
             <span class="content">{{ single.content }}</span>
             <span class="btns"><i class="fa fa-check" ng-class="{'done':single.done}" ng-click="tm.toggleDone(itemdate,$index)"></i><i class="fa fa-remove" ng-click='tm.deleteTodo(itemdate,$index)'></i></span>
           </li>
