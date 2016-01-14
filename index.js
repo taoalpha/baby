@@ -46,7 +46,7 @@ class Baby{
       this.userArgs.CONFIG.todoFilePath = ''
       this.userArgs.CONFIG.autoComplete = false
       console.log("Initialize with default configuration.")
-      Helper.writeToFile(filepath,configuration)
+      Helper.writeToFile(configFile,this.userArgs.CONFIG)
       // by default, disable the autocomplete
       if(this.userArgs.CONFIG.autoComplete){
         //complete.init()
