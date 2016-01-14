@@ -1,13 +1,13 @@
 <div class="crystal left_sidebar"  ng-class="{'collapse':rss.collapse}">
   <form class="inputBox" ng-submit="rss.doFeed('add',rss.feed)">
-    <span class="collapseButton" ng-click="rss.toggleCollapse()"><i class="glyphicon glyphicon-hand-left" ng-class="{'collapse':rss.collapse}"></i></span>
+    <span class="collapseButton" ng-click="rss.toggleCollapse()"><i class="fa fa-hand-o-left" ng-class="{'collapse':rss.collapse}"></i></span>
     <input type="text" name="feedOrder" ng-model="rss.feed.content" placeholder="Input to add or search feeds" ng-show="!rss.collapse" required>
-    <span class="addButton" ng-click="rss.doFeed('add',rss.feed)"><i class="glyphicon glyphicon-plus"></i></span>
+    <span class="addButton" ng-click="rss.doFeed('add',rss.feed)"><i class="fa fa-plus"></i></span>
   </form>
   <div class="feedList" ng-show="!rss.collapse">
     <ul class="allItems">
       <li class="feedItem" ng-repeat="feedItem in rss.feedData | orderObjectBy:'unreadNum':'reverse'" on-finish-render="outer" ng-init="" ng-show="rss.expandUrl==-1 || rss.expandUrl == feedItem.key">
-        <h2 ng-click="rss.expandItem(feedItem.key)">
+        <h2 class='normal' ng-click="rss.expandItem(feedItem.key)" ng-class="{'selected':feedItem.key == rss.expandUrl}">
           <span class="title">{{feedItem.title}}</span>
           <span class="unreadNum" ng-show="feedItem.unreadNum != 0">{{feedItem.unreadNum}}</span>
         </h2>
@@ -16,7 +16,7 @@
             <a href="{{single.link}}" target="_blank" class="title" ng-click="rss.itemClick(single,feedItem.key)">{{ single.title }}</a>
             <span class="btns"></span>
           </li>
-          <li class="loadMore singleItem" ng-click="rss.getMore(feedItem.key)">More</li>
+          <li class="loadMore singleItem btn" ng-class="{'disabled':loading}" ng-click="rss.getMore(feedItem.key)">More</li>
         </ul>
       </li>
     </ul>

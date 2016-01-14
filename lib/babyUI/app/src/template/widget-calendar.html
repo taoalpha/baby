@@ -1,12 +1,12 @@
 <div class="crystal">
   <div class="header">
-      <i class="glyphicon glyphicon-chevron-left" ng-click="wm.previous()"></i>
+      <i class="fa fa-chevron-left" ng-click="wm.previous()"></i>
       <span>{{wm.month.format("MMMM, YYYY")}}</span>
       <div class="stats">
         <span class="add">ADD: {{wm.addCount}}</span>
         <span class="del">DEL: {{wm.delCount}}</span>
       </div>
-      <i class="glyphicon glyphicon-chevron-right" ng-click="wm.next()"></i>
+      <i class="fa fa-chevron-right" ng-click="wm.next()"></i>
   </div>
   <div class="week names">
       <span class="day">Sun</span>
@@ -18,6 +18,6 @@
       <span class="day">Sat</span>
   </div>
   <div class="week" ng-repeat="week in wm.weeks">
-    <span class="day" ng-click="wm.showStat(day)" ng-class="{ today: day.isToday, 'different-month': !day.isCurrentMonth, selected: day.date.isSame(wm.selected,'day') }" ng-repeat="day in week.days">{{day.number}}</span>
+    <span class="day" ng-click="wm.showStat(day)" ng-class="{ normal: day.isToday, 'different-month': !day.isCurrentMonth, selected: day.date.isSame(wm.selected,'day') }" ng-repeat="day in week.days">{{day.number}}</span>
   </div>
 </div>

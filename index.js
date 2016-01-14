@@ -94,12 +94,15 @@ class Baby{
             this.help("blog")
           }else{
             var tmpl = fs.readFileSync(scaffolds+tmplName,"utf-8")
-            var filepath = posts+moment().format().split("T")[0]+"-"+title.replace(/ /g,'-')+".md"
+            var filepath = posts+moment().format().split("T")[0]+"-"+title.replace(/-/g,'').replace(/ |(|)|'|"/g,'-')+".md"
+            var category = 'blog'
             if(Helper.exists(args.c)){
+              category = args.c
               filepath = posts+args.c+"/"+title.toLowerCase().replace(/ /g,'-')+".md"
             }
             tmpl = tmpl.replace("{{ date }}",moment().format().split(".")[0].replace("T"," "))
-            .replace('{{ title }}',title)
+                       .replace("{{ cat }}",category)
+                       .replace('{{ title }}',title)
             Helper.writeToFile(filepath,tmpl,"text")
             console.log(`${Helper.Colors.FgGreen}Your post has created ans saved in: ${Helper.Colors.FgRed}${filepath} ${Helper.Colors.Reset}`)
             args._[1] = filepath
@@ -364,18 +367,24 @@ class Baby{
       if(!Helper.exists(args._[1])){
         rightPrefix = true
       }
-      while(!rightPrefix){
+      var count = 0
+      while(!rightPrefix && count < 30){
         var fName = list[Math.floor(Math.random()*list.length)]
-        if(fName.toLowerCase().indexOf(args._[1])>-1){
+        if(fName.toLowerCase().indexOf(args._[1].toLowerCase())>-1){
           rightPrefix = true
           filepath = [book_dir + "/" + fName]
         }
+        count ++
       }
-      var book = Helper.spawn('open',filepath)
-      book.on('close',(code) => {
-        args.action = "reading"
-        Helper.sayGoodBye(args)
-      })
+      if(!rightPrefix){
+        console.log(`${Helper.Colors.FgGreen} No match book found ! ${Helper.Colors.Reset}`)
+      }else{
+        var book = Helper.spawn('open',filepath)
+        book.on('close',(code) => {
+          args.action = "reading"
+          Helper.sayGoodBye(args)
+        })
+      }
     })
   }
   // rss reader
@@ -395,13 +404,14 @@ class Baby{
     
       var uri = url.parse(request.url).pathname
         , filename = path.join(pathname, uri);
-
-      console.log(filename)
-      
       var dirstatus = Helper.fileExists(filename,'dir')
       var filestatus = Helper.fileExists(filename)
       if(!dirstatus && !filestatus) {
-        response.writeHead(404, {"Content-Type": "text/plain"});
+        if(filename.endsWith('css')){
+          response.writeHead(404, {"Content-Type": "text/css"});
+        }else{
+          response.writeHead(404, {"Content-Type": "text/plain"});
+        }
         response.write("404 Not Found\n");
         response.end();
         return;
@@ -410,14 +420,18 @@ class Baby{
       if (fs.statSync(filename).isDirectory()) filename += '/index.html';
     
       fs.readFile(filename, (err, file) => {
-        if(err) {        
+        if(err) {
           response.writeHead(500, {"Content-Type": "text/plain"});
           response.write(err + "\n");
           response.end();
           return;
         }
     
-        response.writeHead(200);
+        if(filename.endsWith('css')){
+          response.writeHead(200,{"Content-Type": "text/css"});
+        }else{
+          response.writeHead(200);
+        }
         response.end(file);
       });
     }
@@ -487,13 +501,11 @@ class Baby{
       socket.on("addFeed",(data) =>{
         console.log("Got msg")
         feed.db.open((err, db) =>{
-          feed.crawler(data.content).then( ()=>{
+          feed.crawler(data.content,userData).then( ()=>{
             console.log(feed.stats)
-            console.log("closing db")
             db.close()
           },(reason)=>{
             console.log(reason)
-            console.log("closing db")
             db.close()
           })
         })
@@ -511,7 +523,6 @@ class Baby{
         moreData[data.feedUrl].entries = []
         feed.db.open((err, db) =>{
           feed.getDataByFeed(data.feedUrl,moreData,userData.read,10,data.curNum).then( (data)=>{
-            console.log(moreData)
             socket.emit("moreFeed",moreData)
             db.close()
           })

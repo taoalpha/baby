@@ -1,66 +1,7 @@
-/**
- *  If you want to override some bootstrap variables, you have to change values here.
- *  The list of variables are listed here bower_components/bootstrap-sass/assets/stylesheets/bootstrap/_variables.scss
+/* layouts
+ * 1. column: default should be column layout: 3 main columns using flex;
+ * 2. full/single: for single part, only one column;
  */
-$navbar-inverse-link-color: #5AADBB;
-$icon-font-path: "../../bower_components/bootstrap-sass/assets/fonts/bootstrap/";
-$bgSrc: "https://papaly.com/assets/speed_dial_backgrounds/speed_dial_bg_08-a197d5cf58247d02d8b7c526f56d4d5d.jpg";
-
-/* some mixins */
-@mixin flexbox() {
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
-  display: flex;
-}
-
-@mixin flex($values) {
-  -webkit-box-flex: $values;
-  -moz-box-flex:  $values;
-  -webkit-flex:  $values;
-  -ms-flex:  $values;
-  flex:  $values;
-}
-
-@mixin order($val) {
-  -webkit-box-ordinal-group: $val;  
-  -moz-box-ordinal-group: $val;     
-  -ms-flex-order: $val;     
-  -webkit-order: $val;  
-  order: $val;
-}
-/**
- *  Do not remove the comments below. It's the markers used by wiredep to inject
- *  sass dependencies when defined in the bower.json of your dependencies
- */
-// bower:scss
-// endbower
-
-
-// global class styles
-
-*{
-  outline:none;
-}
-
-.crystal{
-  background-color:rgba(0,0,0,0.1);
-  &:before{
-    content:"";
-    display:block;
-    height:100%;
-    width: 100%;
-    background-image:linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url($bgSrc);
-    background-attachment: fixed;
-    position: fixed;
-    top:0px;
-    background-size: cover;
-    -webkit-filter: blur(4px);
-    filter: blur(4px);
-    z-index:-1;
-  }
-}
 
 html,body{
   height: 100%;
@@ -70,39 +11,30 @@ body{
   min-height: 100%;
   background-size: cover;
   background-image:url($bgSrc);
-  &:before{
-    content: "";
-    display:block;
-    width:100%;
-    height:100%;
-    position:absolute;
-    top:0px;
-    z-index:-1;
-  }
-  div.wrapper {
+  div.column {
     color:white;
     overflow:hidden;
     height:100%;
     @include flexbox();
     flex-flow: row wrap;
-    div.left_sidebar, div.right_sidebar{
+    div.col-left , div.col-right{
       position:relative;
       @include flex(2 auto);
       height:100%;
     }
-    div.left_sidebar{
+    div.col-left{
       @include order(1);
       &.collapse{
         display:block;
         @include flex(0 50px);
       }
     }
-    div.main_content{
+    div.col-main{
       @include order(2);
       @include flex(6 0px);
       padding:10px;
     }
-    div.right_sidebar{
+    div.col-right{
       @include order(3);
       &.collapse{
         display:block;
@@ -110,30 +42,6 @@ body{
       }
     }
   }
-}
-
-/**
- *  Do not remove the comments below. It's the markers used by gulp-inject to inject
- *  all your sass files automatically
- */
-// injector
-// endinjector
-
-
-::-webkit-input-placeholder {
-   color: #ddd;
-}
-
-:-moz-placeholder { /* Firefox 18- */
-   color: #ddd;  
-}
-
-::-moz-placeholder {  /* Firefox 19+ */
-   color: #ddd;  
-}
-
-:-ms-input-placeholder {  
-   color: #ddd;  
 }
 
 .todo,.rss{
@@ -160,11 +68,7 @@ body{
       outline:0px;
       color:#4d4d4d;
       padding:10px;
-      background-color:rgba(255,255,255,0.2);
       border:1px solid #ccc;
-      &:focus{
-        background-color:rgba(255,255,255,0.1);
-      }
     }
     span.addButton{
       cursor:pointer;
@@ -174,11 +78,16 @@ body{
 }
 
 .rss{
+  max-width: 450px;
+  .inputBox{
+    max-width:350px;
+  }
   span.collapseButton{
     cursor:pointer;
     right:-50px;
   }
   .feedList{
+    max-width:350px;
     .feedItem{
       h2{
         span.title {
@@ -191,6 +100,11 @@ body{
       .singleItem{
         a{
           color:white;
+          text-decoration:none;
+          font-size:14px;
+          &:hover{
+            color:#ddd;
+          }
         }
         &.read a{
           color:#ccc;
@@ -198,10 +112,6 @@ body{
         }
         &.loadMore{
           text-align:center;
-          background-color:rgba(255,255,255,0.4);
-          &:hover{
-            background-color:rgba(255,255,255,0.2);
-          }
         }
       }
     }
@@ -229,15 +139,15 @@ body{
         border-right:1px solid #ccc;
         position: relative;
         &.done:after{
-          content:"\e013";
+          content:"\f00c";
           color:#2DF32D;
         }
         &:after{
-          content:"\e023";
+          content:"\f017";
           color:#ddd;
         }
         &:before,&:after{
-          font-family: 'Glyphicons Halflings';
+          font-family: 'FontAwesome';
           position: absolute;
           left: -8px;
           top: -8px;
@@ -249,7 +159,6 @@ body{
           background-image:linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url($bgSrc);
           background-attachment: fixed;
           background-size: cover;
-          -webkit-filter: blur(4px);
           filter: blur(4px);
         }
         h2{
@@ -259,7 +168,6 @@ body{
           border-bottom: 1px solid #ccc;
           font-size: 15px;
           margin: 0px;
-          background-color:rgba(255,255,255,0.3);
           span{
             float:right;
             padding-right:10px;
@@ -309,11 +217,12 @@ body{
       }
     }
     &:after{
-      content:"\e005";
-      font-family: 'Glyphicons Halflings';
+      content:"\f004";
+      font-family: 'FontAwesome';
       position: absolute;
       bottom:-10px;
-      left:-10px;
+      left:-8px;
+      font-size: 15px;
       width:20px;
       height:20px;
       color:#ccc;
@@ -329,7 +238,6 @@ $secondary-colour:#2875C7;
 $spacing:10px;
 $icon-width:40px;
 $header-height:40px;
-
 
 .widget{
     float:left;
@@ -355,11 +263,11 @@ $header-height:40px;
           line-height:$header-height;
         }
         
-        i.glyphicon-chevron-left{
+        i.fa-chevron-left{
           left:5px;
         }
         
-        i.glyphicon-chevron-right{
+        i.fa-chevron-right{
           right:5px;
           text-align:right;
         }
@@ -372,6 +280,7 @@ $header-height:40px;
           font-weight:bold;
           text-transform:uppercase;
           line-height:$header-height;
+          font-size:14px;
         }
         div.stats{
           float: right;
@@ -402,6 +311,8 @@ $header-height:40px;
         
         span.day {
             float:left;
+            box-sizing: border-box;
+            font-size:10.5px;
             width:(100%/7);
             border-left:solid 1px $border-colour;
             padding:5px;
@@ -413,17 +324,8 @@ $header-height:40px;
                 border-left:none;
             }
             
-            &.today {
-                background:rgba(255, 255, 255, 0.2);
-            }
-            
             &.different-month {
                 color:#C0C0C0;
-            }
-            
-            &.selected {
-                background:rgba(255, 255, 255, 0.3);
-                color:white;
             }
         }
         
@@ -432,4 +334,3 @@ $header-height:40px;
         }
     }
 }
-
