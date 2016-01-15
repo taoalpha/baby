@@ -466,63 +466,61 @@ class Baby{
       var FeedSpider = require('./lib/feedAPI')
       var feed = new FeedSpider()
       var allData = {}
-      var userData = {}
+      var user = {
+        useremail: "iamzhoutao92@gmail.com",
+        userpass: "zhou1992"
+      }
+      // TODO: Need figure out a way to save the user data: maybe pass by the client everytime?
       socket.on("giveMeFeedData", () => {
         feed.db.open((err, db) =>{
           // list stored with all promises
           var promises = []
         
-          var user = {
-            useremail: "iamzhoutao92@gmail.com",
-            userpass: "zhou1992"
-          }
           feed.getUserData(user).then( (curUser) => {
-            userData = curUser
-            console.log(userData.subscribe)
             feed.getSiteBySub(curUser.subscribe).then( (data) =>{
-              data.forEach( (item) =>{
-                allData[item.feedUrl] = {}
-                allData[item.feedUrl].title = item.title
-                allData[item.feedUrl].link = item.link
-                allData[item.feedUrl].entries = []
-                promises.push(feed.getDataByFeed(item.feedUrl,allData,curUser.read))
-              })
+              // DONE: refactor with promise all and map
+              return Promise.all( data.map( (v)=>{
+                allData[v.feedUrl] = {}
+                allData[v.feedUrl].title = v.title
+                allData[v.feedUrl].link = v.link
+                allData[v.feedUrl].entries = []
+                return feed.getDataByFeed(v.feedUrl,allData,curUser.read)
+              }) )
             }).then( ()=>{
-              Promise.all(promises).then( (data) =>{
-                socket.emit("feedData",allData)
-                db.close()
-              },(reason)=>{
-                socket.emit("feedData",reason)
-                db.close()
-              })
+              socket.emit("feedData",allData)
+              db.close()
+            },(reason)=>{
+              socket.emit("feedData",reason)
+              db.close()
             })
           })
         })
       })
       socket.on("addFeed",(data) =>{
         console.log("Got msg")
+        var promises = []
         feed.db.open((err, db) =>{
-          feed.crawler(data.content,userData).then( ()=>{
+          feed.crawler(data.content,user).then( ()=>{
             console.log(feed.stats)
             // and push updated feed data
-            feed.getUserData(userData).then( (curUser) => {
-              userData = curUser
+            feed.getUserData(user).then( (curUser) => {
               feed.getSiteBySub(curUser.subscribe).then( (data) =>{
-                data.forEach( (item) =>{
-                  allData[item.feedUrl] = {}
-                  allData[item.feedUrl].title = item.title
-                  allData[item.feedUrl].link = item.link
-                  allData[item.feedUrl].entries = []
-                  promises.push(feed.getDataByFeed(item.feedUrl,allData,curUser.read))
-                })
+                console.log("Got feed data")
+                return Promise.all( data.map( (v)=>{
+                  allData[v.feedUrl] = {}
+                  allData[v.feedUrl].title = v.title
+                  allData[v.feedUrl].link = v.link
+                  allData[v.feedUrl].entries = []
+                  return feed.getDataByFeed(v.feedUrl,allData,curUser.read)
+                }) )
               }).then( ()=>{
-                Promise.all(promises).then( (data) =>{
-                  socket.emit("feedData",allData)
-                  db.close()
-                },(reason)=>{
-                  socket.emit("feedData",reason)
-                  db.close()
-                })
+                console.log("send data")
+                socket.emit("feedData",allData)
+                db.close()
+              },(reason)=>{
+                console.log(reason)
+                socket.emit("feedData",reason)
+                db.close()
               })
             })
           },(reason)=>{
@@ -543,7 +541,7 @@ class Baby{
         moreData[data.feedUrl] = {}
         moreData[data.feedUrl].entries = []
         feed.db.open((err, db) =>{
-          feed.getDataByFeed(data.feedUrl,moreData,userData.read,10,data.curNum).then( (data)=>{
+          feed.getDataByFeed(data.feedUrl,moreData,user.read,10,data.curNum).then( (data)=>{
             socket.emit("moreFeed",moreData)
             db.close()
           })
