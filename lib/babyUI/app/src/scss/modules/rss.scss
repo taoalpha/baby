@@ -1,6 +1,9 @@
 .rss{
   height: 100%;
-  >div{max-width: 450px;}
+  max-width: 450px;
+  .crystal{
+    height:100%;
+  }
   span.collapseButton{
     cursor:pointer;
     right:-50px;

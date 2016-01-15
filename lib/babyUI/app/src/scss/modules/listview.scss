@@ -6,11 +6,12 @@
   }
   .lv-header{
     width:80%;
-    margin:50px auto 0;
+    margin:auto;
+    padding:50px 0 0 0;
     position: relative;
     span{
       position:absolute;
-      top:0px;
+      top:50px;
       right:0px;
       line-height:50px;
       width:50px;
