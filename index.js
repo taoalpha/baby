@@ -466,13 +466,24 @@ class Baby{
       var FeedSpider = require('./lib/feedAPI')
       var feed = new FeedSpider()
       var allData = {}
-      var user = {
-        useremail: "iamzhoutao92@gmail.com",
-        userpass: "zhou1992"
-      }
       var readData = []
+      socket.on("rss_authenticate", (userData) =>{
+        feed.db.open((err, db) =>{
+          feed.authenticate(userData).then( (exist) => {
+            var data = {}
+            if(exist){
+              data.status = 1
+              data.msg = "Welcome back!"
+            }else{
+              data.status = 0
+              data.msg = "User doesn't exist!"
+            }
+            socket.emit("rss_authenticate_result",data)
+          })
+        })
+      })
       // TODO: Need figure out a way to save the user data: maybe pass by the client everytime?
-      socket.on("giveMeFeedData", () => {
+      socket.on("giveMeFeedData", (user) => {
         feed.db.open((err, db) =>{
           // list stored with all promises
           var promises = []
@@ -501,14 +512,14 @@ class Baby{
         console.log("Got msg")
         var promises = []
         feed.db.open((err, db) =>{
-          feed.crawler(data.content,user).then( ()=>{
+          feed.crawler(data.content,data.user).then( ()=>{
             console.log(feed.stats)
             // and push updated feed data
-            feed.getUserData(user).then( (curUser) => {
+            feed.getUserData(data.user).then( (curUser) => {
               readData = curUser.read
-              feed.getSiteBySub(curUser.subscribe).then( (data) =>{
+              feed.getSiteBySub(curUser.subscribe).then( (res) =>{
                 console.log("Got feed data")
-                return Promise.all( data.map( (v)=>{
+                return Promise.all( res.map( (v)=>{
                   allData[v.feedUrl] = {}
                   allData[v.feedUrl].title = v.title
                   allData[v.feedUrl].link = v.link

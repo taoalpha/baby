@@ -1,5 +1,14 @@
 <div class="listview" ng-class="{'collapse':rss.collapse}">
-  <div class="crystal">
+  <div class="crystal" ng-show="!rss.status.userActive">
+    <form id="authentication" class='lv-header' ng-submit="rss.authenticate(rss.user)">
+      <span class="collapseButton" ng-click="rss.toggleCollapse()"><i class="fa fa-hand-o-left" ng-class="{'collapse':rss.collapse}"></i></span>
+      <input type="email" name="useremail" ng-model="rss.user.useremail" placeholder="Your Email." ng-show="!rss.collapse" required>
+      <input type="password" name="userpass" ng-model="rss.user.userpass" placeholder="Your Password." ng-show="!rss.collapse" required>
+      <span class="addButton" ng-show="!rss.status.userActive && rss.collapse" ng-click="rss.doFeed('add',rss.feed)"><i class="fa fa-plus"></i></span>
+      <button class="btn" ng-show="!rss.collapse">Sign In</button>
+    </form>
+  </div>
+  <div class="crystal" ng-show="rss.status.userActive">
     <form class="lv-header" ng-submit="rss.doFeed('add',rss.feed)">
       <span class="collapseButton" ng-click="rss.toggleCollapse()"><i class="fa fa-hand-o-left" ng-class="{'collapse':rss.collapse}"></i></span>
       <input type="text" name="feedOrder" ng-model="rss.feed.content" placeholder="Input to add or search feeds" ng-show="!rss.collapse" required>
