@@ -48,12 +48,16 @@ body{
     height:100%;
     @include flexbox();
     flex-flow: row wrap;
+    &.rss{
+      max-width:initial;
+    }
     > div{
       @include order(1);
       @include flex(2 0px);
     }
     iframe{
       display:block;
+      background: #fff;
       @include order(2);
       height:100%;
       @include flex(6 0px);
