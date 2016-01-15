@@ -470,6 +470,7 @@ class Baby{
         useremail: "iamzhoutao92@gmail.com",
         userpass: "zhou1992"
       }
+      var readData = []
       // TODO: Need figure out a way to save the user data: maybe pass by the client everytime?
       socket.on("giveMeFeedData", () => {
         feed.db.open((err, db) =>{
@@ -504,6 +505,7 @@ class Baby{
             console.log(feed.stats)
             // and push updated feed data
             feed.getUserData(user).then( (curUser) => {
+              readData = curUser.read
               feed.getSiteBySub(curUser.subscribe).then( (data) =>{
                 console.log("Got feed data")
                 return Promise.all( data.map( (v)=>{
@@ -537,11 +539,12 @@ class Baby{
         })
       })
       socket.on("loadMoreFeed",(data) =>{
+        console.log(data)
         var moreData = {}
         moreData[data.feedUrl] = {}
         moreData[data.feedUrl].entries = []
         feed.db.open((err, db) =>{
-          feed.getDataByFeed(data.feedUrl,moreData,user.read,10,data.curNum).then( (data)=>{
+          feed.getDataByFeed(data.feedUrl,moreData,readData,10,data.curNum).then( (data)=>{
             socket.emit("moreFeed",moreData)
             db.close()
           })

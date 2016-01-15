@@ -54,6 +54,7 @@ body{
     > div{
       @include order(1);
       @include flex(2 0px);
+      min-width:450px;
     }
     iframe{
       display:block;
@@ -61,6 +62,23 @@ body{
       @include order(2);
       height:100%;
       @include flex(6 0px);
+    }
+  }
+  .mobile{
+    max-width: initial;
+    .lv-header,.lv-container{
+      width:100%;
+      padding:5px 0 0;
+    }
+    .lv-header{
+      span{
+        top:0px;
+      }
+    }
+    .lv-container{
+      .lv-itembox{
+        padding-left:10px;
+      }
     }
   }
 }
