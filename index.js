@@ -370,7 +370,7 @@ class Baby{
       var count = 0
       while(!rightPrefix && count < 30){
         var fName = list[Math.floor(Math.random()*list.length)]
-        if(fName.toLowerCase().indexOf(args._[1].toLowerCase())>-1){
+        if(fName.toLowerCase().indexOf(args._[1].toLowerCase()) > -1){
           rightPrefix = true
           filepath = [book_dir + "/" + fName]
         }
@@ -478,6 +478,7 @@ class Baby{
           }
           feed.getUserData(user).then( (curUser) => {
             userData = curUser
+            console.log(userData.subscribe)
             feed.getSiteBySub(curUser.subscribe).then( (data) =>{
               data.forEach( (item) =>{
                 allData[item.feedUrl] = {}
@@ -503,7 +504,27 @@ class Baby{
         feed.db.open((err, db) =>{
           feed.crawler(data.content,userData).then( ()=>{
             console.log(feed.stats)
-            db.close()
+            // and push updated feed data
+            feed.getUserData(userData).then( (curUser) => {
+              userData = curUser
+              feed.getSiteBySub(curUser.subscribe).then( (data) =>{
+                data.forEach( (item) =>{
+                  allData[item.feedUrl] = {}
+                  allData[item.feedUrl].title = item.title
+                  allData[item.feedUrl].link = item.link
+                  allData[item.feedUrl].entries = []
+                  promises.push(feed.getDataByFeed(item.feedUrl,allData,curUser.read))
+                })
+              }).then( ()=>{
+                Promise.all(promises).then( (data) =>{
+                  socket.emit("feedData",allData)
+                  db.close()
+                },(reason)=>{
+                  socket.emit("feedData",reason)
+                  db.close()
+                })
+              })
+            })
           },(reason)=>{
             console.log(reason)
             db.close()

@@ -3,6 +3,8 @@
   max-width: 450px;
   .crystal{
     height:100%;
+    overflow-x:hidden;
+    overflow-y: scroll;
   }
   span.collapseButton{
     cursor:pointer;
