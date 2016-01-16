@@ -543,6 +543,7 @@ class Baby{
         })
       })
       socket.on("feedClick",(data) =>{
+        console.log("click")
         feed.db.open((err, db) =>{
           feed.markRead(data.user,data.fid).then( ()=>{
             db.close()

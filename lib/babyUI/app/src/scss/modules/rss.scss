@@ -34,6 +34,9 @@
       }
       &.loadMore{
         text-align:center;
+        &.disabled{
+          cursor:wait;
+        }
       }
     }
   }

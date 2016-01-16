@@ -1,36 +1,36 @@
-<div class="listview" ng-class="{'collapse':rss.collapse}">
+<div class="listview" ng-class="{'collapse':rss.status.collapse}">
   <div class="crystal" ng-show="!rss.status.userActive">
     <form id="authentication" class='lv-header' ng-submit="rss.authenticate(rss.user)">
-      <span class="collapseButton" ng-click="rss.toggleCollapse()"><i class="fa fa-hand-o-left" ng-class="{'collapse':rss.collapse}"></i></span>
-      <input type="email" name="useremail" ng-model="rss.user.useremail" placeholder="Your Email." ng-show="!rss.collapse" required>
-      <input type="password" name="userpass" ng-model="rss.user.userpass" placeholder="Your Password." ng-show="!rss.collapse" required>
-      <span class="addButton" ng-show="!rss.status.userActive && rss.collapse" ng-click="rss.doFeed('add',rss.feed)"><i class="fa fa-plus"></i></span>
-      <button class="btn" ng-show="!rss.collapse">Sign In</button>
+      <span class="collapseButton" ng-click="rss.toggleCollapse()"><i class="fa fa-hand-o-left" ng-class="{'collapse':rss.status.collapse}"></i></span>
+      <input type="email" name="useremail" ng-model="rss.user.useremail" placeholder="Your Email." ng-show="!rss.status.collapse" required>
+      <input type="password" name="userpass" ng-model="rss.user.userpass" placeholder="Your Password." ng-show="!rss.status.collapse" required>
+      <span class="addButton" ng-show="!rss.status.userActive && rss.status.collapse" ng-click="rss.doFeed('add',rss.feed)"><i class="fa fa-plus"></i></span>
+      <button class="btn" ng-show="!rss.status.collapse">Sign In</button>
     </form>
   </div>
   <div class="crystal" ng-show="rss.status.userActive">
     <form class="lv-header" ng-submit="rss.doFeed('add',rss.feed)">
-      <span class="collapseButton" ng-click="rss.toggleCollapse()"><i class="fa fa-hand-o-left" ng-class="{'collapse':rss.collapse}"></i></span>
-      <input type="text" name="feedOrder" ng-model="rss.feed.content" placeholder="Input to add or search feeds" ng-show="!rss.collapse" required>
+      <span class="collapseButton" ng-click="rss.toggleCollapse()"><i class="fa fa-hand-o-left" ng-class="{'collapse':rss.status.collapse}"></i></span>
+      <input type="text" name="feedOrder" ng-model="rss.feed.content" placeholder="Input to add or search feeds" ng-show="!rss.status.collapse" required>
       <span class="addButton" ng-click="rss.doFeed('add',rss.feed)"><i class="fa fa-plus"></i></span>
     </form>
-    <div class="lv-container" ng-show="!rss.collapse">
+    <div class="lv-container" ng-show="!rss.status.collapse">
       <ul>
-        <li class="lv-itembox" ng-repeat="feedItem in rss.feedData | orderObjectBy:'unreadNum':'reverse'" on-finish-render="outer" ng-init="" ng-show="rss.expandUrl==-1 || rss.expandUrl == feedItem.key">
-          <h2 class='normal lv-item-title' ng-click="rss.expandItem(feedItem.key)" ng-class="{'selected':feedItem.key == rss.expandUrl}">
+        <li class="lv-itembox" ng-repeat="feedItem in rss.feedData | orderObjectBy:'unreadNum':'reverse'" on-finish-render="outer" ng-init="" ng-show="rss.status.expandUrl==-1 || rss.status.expandUrl == feedItem.key">
+          <h2 class='normal lv-item-title' ng-click="rss.expandItem(feedItem.key)" ng-class="{'selected':feedItem.key == rss.status.expandUrl}">
             <span class="title">{{feedItem.title}}</span>
             <span class="unreadNum" ng-show="feedItem.unreadNum != 0">{{feedItem.unreadNum}}</span>
           </h2>
-          <ul ng-show="feedItem.key == rss.expandUrl" >
+          <ul ng-show="feedItem.key == rss.status.expandUrl" >
             <li class="lv-item" ng-repeat="single in feedItem.entries track by $index" ng-class="{'read':single.read==1}">
               <a href="{{single.link}}" target="_blank" class="title" ng-click="rss.itemClick(single,feedItem.key,$event)">{{ single.title }}</a>
               <span class="btns"></span>
             </li>
-            <li class="loadMore lv-item btn" ng-class="{'disabled':loading}" ng-click="rss.getMore(feedItem.key)">More</li>
+            <li class="loadMore lv-item btn" ng-class="{'disabled':rss.status.loadings.more}" ng-click="rss.getMore(feedItem.key)">More</li>
           </ul>
         </li>
       </ul>
     </div>
   </div>
-  <iframe src="{{rss.viewUrl}}"></iframe>
+  <iframe src="{{rss.status.viewUrl}}" ng-init="rss.randomPic()" ng-style="rss.status.vfbg"></iframe>
 </div>

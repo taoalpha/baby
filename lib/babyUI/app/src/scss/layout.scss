@@ -42,6 +42,7 @@ body{
   }
   iframe{
     display:none;
+    background-size: cover;
   }
   // single layout - special for rss
   .single{
@@ -58,7 +59,7 @@ body{
     }
     iframe{
       display:block;
-      background: #fff;
+      background-color: #fff;
       @include order(2);
       height:100%;
       @include flex(6 0px);
