@@ -5,7 +5,7 @@
       <input type="email" name="useremail" ng-model="rss.user.useremail" placeholder="Your Email." ng-show="!rss.status.collapse" required>
       <input type="password" name="userpass" ng-model="rss.user.userpass" placeholder="Your Password." ng-show="!rss.status.collapse" required>
       <span class="addButton" ng-show="!rss.status.userActive && rss.status.collapse" ng-click="rss.doFeed('add',rss.feed)"><i class="fa fa-plus"></i></span>
-      <button class="btn" ng-show="!rss.status.collapse">Sign In</button>
+      <button class="btn" ng-show="!rss.status.collapse" ng-class="{'disabled':rss.status.loadings.signing}">Sign In</button>
     </form>
   </div>
   <div class="crystal" ng-show="rss.status.userActive">

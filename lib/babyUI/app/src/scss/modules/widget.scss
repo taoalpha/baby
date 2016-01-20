@@ -9,6 +9,7 @@ $header-height:40px;
     display:block;
     width:300px;
     border:solid 1px $border-colour;
+    margin-right:10px;
     margin-bottom:10px;
     
     div.header {
@@ -98,4 +99,12 @@ $header-height:40px;
             font-weight:bold;
         }
     }
+}
+.clock.widget div.week span.day{
+  width:10%;
+  color:rgba(255,255,255,0.4);
+  &.highlight{
+    color:white;
+    font-weight:bold;
+  }
 }

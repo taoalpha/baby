@@ -94,11 +94,11 @@ class Baby{
             this.help("blog")
           }else{
             var tmpl = fs.readFileSync(scaffolds+tmplName,"utf-8")
-            var filepath = posts+moment().format().split("T")[0]+"-"+title.replace(/-/g,'').replace(/ |(|)|'|"/g,'-')+".md"
+            var filepath = posts+moment().format().split("T")[0]+"-"+title.replace(/\s-/g,'').replace(/ /g,'-')+".md"
             var category = 'blog'
             if(Helper.exists(args.c)){
               category = args.c
-              filepath = posts+args.c+"/"+title.toLowerCase().replace(/ /g,'-')+".md"
+              filepath = posts+args.c+"/"+title.toLowerCase().replace(/\s-/g,'').replace(/ /g,'-')+".md"
             }
             tmpl = tmpl.replace("{{ date }}",moment().format().split(".")[0].replace("T"," "))
                        .replace("{{ cat }}",category)
@@ -368,7 +368,7 @@ class Baby{
         rightPrefix = true
       }
       var count = 0
-      while(!rightPrefix && count < 30){
+      while(!rightPrefix && count < 300){
         var fName = list[Math.floor(Math.random()*list.length)]
         if(fName.toLowerCase().indexOf(args._[1].toLowerCase()) > -1){
           rightPrefix = true
