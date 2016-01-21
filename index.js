@@ -496,7 +496,15 @@ class Baby{
                 allData[v.feedUrl].title = v.title
                 allData[v.feedUrl].link = v.link
                 allData[v.feedUrl].entries = []
-                return feed.getDataByFeed(v.feedUrl,allData,curUser.read,false)
+                var query = {
+                    feedUrl:v.feedUrl,
+                    moreData:allData,
+                    readData:curUser.read,
+                    amount:10,
+                    skip:0,
+                    skipRead:false
+                  }
+                return feed.getDataByFeed(query)
               }) )
             }).then( ()=>{
               socket.emit("feedData",allData)
@@ -524,7 +532,15 @@ class Baby{
                   allData[v.feedUrl].title = v.title
                   allData[v.feedUrl].link = v.link
                   allData[v.feedUrl].entries = []
-                  return feed.getDataByFeed(v.feedUrl,allData,curUser.read,false)
+                  var query = {
+                    feedUrl:v.feedUrl,
+                    moreData:allData,
+                    readData:curUser.read,
+                    amount:10,
+                    skip:0,
+                    skipRead:false
+                  }
+                  return feed.getDataByFeed(query)
                 }) )
               }).then( ()=>{
                 console.log("send data")
@@ -556,7 +572,15 @@ class Baby{
         moreData[data.feedUrl] = {}
         moreData[data.feedUrl].entries = []
         feed.db.open((err, db) =>{
-          feed.getDataByFeed(data.feedUrl,moreData,readData,10,data.curNum,data.skipRead).then( (data)=>{
+          var query = {
+            feedUrl:data.feedUrl,
+            moreData:moreData,
+            readData:readData,
+            amount:10,
+            skip:data.curNum,
+            skipRead:data.skipRead
+          };
+          feed.getDataByFeed(query).then( (data)=>{
             socket.emit("moreFeed",moreData)
             db.close()
           })
