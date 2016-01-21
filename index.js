@@ -498,7 +498,7 @@ class Baby{
                 allData[v.feedUrl].entries = []
                 var query = {
                     feedUrl:v.feedUrl,
-                    moreData:allData[v.feedUrl],
+                    feedData:allData[v.feedUrl],
                     readData:curUser.read,
                     amount:10,
                     skip:0,
@@ -510,6 +510,7 @@ class Baby{
               socket.emit("feedData",allData)
               db.close()
             },(reason)=>{
+              console.log(reason)
               socket.emit("feedData",reason)
               db.close()
             })
@@ -534,7 +535,7 @@ class Baby{
                   allData[v.feedUrl].entries = []
                   var query = {
                     feedUrl:v.feedUrl,
-                    moreData:allData[v.feedUrl],
+                    feedData:allData[v.feedUrl],
                     readData:curUser.read,
                     amount:10,
                     skip:0,
@@ -574,7 +575,7 @@ class Baby{
         feed.db.open((err, db) =>{
           var query = {
             feedUrl:data.feedUrl,
-            moreData:moreData[data.feedUrl],
+            feedData:moreData[data.feedUrl],
             readData:readData,
             amount:10,
             skip:data.curNum,
