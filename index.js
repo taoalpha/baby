@@ -498,7 +498,7 @@ class Baby{
                 allData[v.feedUrl].entries = []
                 var query = {
                     feedUrl:v.feedUrl,
-                    moreData:allData,
+                    moreData:allData[v.feedUrl],
                     readData:curUser.read,
                     amount:10,
                     skip:0,
@@ -534,7 +534,7 @@ class Baby{
                   allData[v.feedUrl].entries = []
                   var query = {
                     feedUrl:v.feedUrl,
-                    moreData:allData,
+                    moreData:allData[v.feedUrl],
                     readData:curUser.read,
                     amount:10,
                     skip:0,
@@ -574,7 +574,7 @@ class Baby{
         feed.db.open((err, db) =>{
           var query = {
             feedUrl:data.feedUrl,
-            moreData:moreData,
+            moreData:moreData[data.feedUrl],
             readData:readData,
             amount:10,
             skip:data.curNum,
