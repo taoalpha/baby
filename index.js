@@ -489,6 +489,7 @@ class Baby{
           var promises = []
         
           feed.getUserData(user).then( (curUser) => {
+            readData = curUser.read;
             feed.getSiteBySub(curUser.subscribe).then( (data) =>{
               // DONE: refactor with promise all and map
               return Promise.all( data.map( (v)=>{
