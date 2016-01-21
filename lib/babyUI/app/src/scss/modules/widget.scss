@@ -102,9 +102,10 @@ $header-height:40px;
 }
 .clock.widget div.week span.day{
   width:10%;
-  color:rgba(255,255,255,0.4);
+  color:rgba(255,255,255,0.2);
   &.highlight{
     color:white;
     font-weight:bold;
+    text-shadow: 0px 1px 10px #ccc;
   }
 }

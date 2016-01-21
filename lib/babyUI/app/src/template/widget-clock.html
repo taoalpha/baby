@@ -1,5 +1,5 @@
 <div class="crystal">
   <div class="row week" ng-repeat="line in wm.board" ng-init="lIndex=$index">
-    <span class="day" ng-class="{ highlight : wm.mapper[lIndex+'-'+$index],selected: wm.mapper[lIndex+'-'+$index] }" ng-repeat="letter in line track by $index">{{letter}}</span>
+    <span class="day" ng-class="{ highlight : wm.mapper[lIndex+'-'+$index] }" ng-repeat="letter in line track by $index">{{letter}}</span>
   </div>
 </div>

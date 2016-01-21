@@ -1,7 +1,7 @@
 <div class="listview" ng-class="{'collapse':rss.status.collapse}">
   <div class="crystal" ng-show="!rss.status.userActive">
     <form id="authentication" class='lv-header' ng-submit="rss.authenticate(rss.user)">
-      <span class="collapseButton" ng-click="rss.toggleCollapse()"><i class="fa fa-hand-o-left" ng-class="{'collapse':rss.status.collapse}"></i></span>
+      <span class="collapseButton" ng-click="rss.status.collapse=!rss.status.collapse"><i class="fa fa-hand-o-left" ng-class="{'collapse':rss.status.collapse}"></i></span>
       <input type="email" name="useremail" ng-model="rss.user.useremail" placeholder="Your Email." ng-show="!rss.status.collapse" required>
       <input type="password" name="userpass" ng-model="rss.user.userpass" placeholder="Your Password." ng-show="!rss.status.collapse" required>
       <span class="addButton" ng-show="!rss.status.userActive && rss.status.collapse" ng-click="rss.doFeed('add',rss.feed)"><i class="fa fa-plus"></i></span>
@@ -10,11 +10,15 @@
   </div>
   <div class="crystal" ng-show="rss.status.userActive">
     <form class="lv-header" ng-submit="rss.doFeed('add',rss.feed)">
-      <span class="collapseButton" ng-click="rss.toggleCollapse()"><i class="fa fa-hand-o-left" ng-class="{'collapse':rss.status.collapse}"></i></span>
+      <span class="collapseButton" ng-click="rss.status.collapse=!rss.status.collapse"><i class="fa fa-hand-o-left" ng-class="{'collapse':rss.status.collapse}"></i></span>
       <input type="text" name="feedOrder" ng-model="rss.feed.content" placeholder="Input to add or search feeds" ng-show="!rss.status.collapse" required>
       <span class="addButton" ng-click="rss.doFeed('add',rss.feed)"><i class="fa fa-plus"></i></span>
     </form>
     <div class="lv-container" ng-show="!rss.status.collapse">
+      <span class="btns">
+        <i class="fa fa-refresh" ng-click="rss.reload()" ng-class="{'an-circle': rss.status.loadings.reload}"></i>
+        <i class="fa" ng-class="{ 'fa-eye':!rss.status.skipRead,'fa-eye-slash':rss.status.skipRead }" ng-click="rss.status.skipRead=!rss.status.skipRead"></i>
+      </span >
       <ul>
         <li class="lv-itembox" ng-repeat="feedItem in rss.feedData | orderObjectBy:'unreadNum':'reverse'" on-finish-render="outer" ng-init="" ng-show="rss.status.expandUrl==-1 || rss.status.expandUrl == feedItem.key">
           <h2 class='normal lv-item-title' ng-click="rss.expandItem(feedItem.key)" ng-class="{'selected':feedItem.key == rss.status.expandUrl}">
@@ -22,7 +26,8 @@
             <span class="unreadNum" ng-show="feedItem.unreadNum != 0">{{feedItem.unreadNum}}</span>
           </h2>
           <ul ng-show="feedItem.key == rss.status.expandUrl" >
-            <li class="lv-item" ng-repeat="single in feedItem.entries track by $index" ng-class="{'read':single.read==1}">
+            <li class="lv-item hint" ng-show="rss.status.skipRead && feedItem.unreadNum==0">You have read all latest feeds of this feed.</li>
+            <li class="lv-item" ng-repeat="single in feedItem.entries track by $index" ng-class="{'read':single.read==1}" ng-hide="rss.status.skipRead && single.read==1">
               <a href="{{single.link}}" target="_blank" class="title" ng-click="rss.itemClick(single,feedItem.key,$event)">{{ single.title }}</a>
               <span class="btns"></span>
             </li>

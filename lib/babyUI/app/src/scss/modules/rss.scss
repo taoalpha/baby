@@ -11,6 +11,17 @@
     right:-50px;
   }
   .lv-container{
+    .btns{
+      position:absolute;
+      top:10px;
+      right:0px;
+      i{
+        float:right;
+        margin-left:10px;
+        width:16px;
+        cursor:pointer;
+      }
+    }
     .lv-item-title{
       span.title {
         width:70%;
@@ -39,5 +50,21 @@
         }
       }
     }
+  }
+}
+
+
+.an-circle{
+  animation-name:loading;
+  animation-iteration-count: infinite;
+  animation-duration: 3s;
+}
+
+@keyframes loading{
+  from{
+    transform:rotate(0deg);
+  }
+  to{
+    transform:rotate(360deg);
   }
 }

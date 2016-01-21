@@ -496,7 +496,7 @@ class Baby{
                 allData[v.feedUrl].title = v.title
                 allData[v.feedUrl].link = v.link
                 allData[v.feedUrl].entries = []
-                return feed.getDataByFeed(v.feedUrl,allData,curUser.read)
+                return feed.getDataByFeed(v.feedUrl,allData,curUser.read,false)
               }) )
             }).then( ()=>{
               socket.emit("feedData",allData)
@@ -524,7 +524,7 @@ class Baby{
                   allData[v.feedUrl].title = v.title
                   allData[v.feedUrl].link = v.link
                   allData[v.feedUrl].entries = []
-                  return feed.getDataByFeed(v.feedUrl,allData,curUser.read)
+                  return feed.getDataByFeed(v.feedUrl,allData,curUser.read,false)
                 }) )
               }).then( ()=>{
                 console.log("send data")
@@ -556,7 +556,7 @@ class Baby{
         moreData[data.feedUrl] = {}
         moreData[data.feedUrl].entries = []
         feed.db.open((err, db) =>{
-          feed.getDataByFeed(data.feedUrl,moreData,readData,10,data.curNum).then( (data)=>{
+          feed.getDataByFeed(data.feedUrl,moreData,readData,10,data.curNum,data.skipRead).then( (data)=>{
             socket.emit("moreFeed",moreData)
             db.close()
           })
