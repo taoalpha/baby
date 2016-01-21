@@ -567,6 +567,7 @@ class Baby{
             db.close()
           })
         })
+        //socket.removeAllListeners("rss_authenticate_result")
       })
       socket.on("loadMoreFeed",(data) =>{
         console.log(data)
