@@ -444,162 +444,11 @@ class Baby{
         //Tasks.todo(data)
         Helper.sayGoodBye(args)
       });
-      socket.on('giveMeSummaryData', (data) => {
-        var filepath = path.join(__dirname,'./data/.gSummary.json')
-        var summaryData = JSON.parse(fs.readFileSync(filepath))
-        socket.emit("summaryData",summaryData)
-      });
-
-      socket.on('giveMeTodoData', (data) => {
-        var filepath = path.join(__dirname,'./data/.todo.json')
-        var todoList = JSON.parse(fs.readFileSync(filepath))
-        socket.emit("todoData",todoList)
-      });
-      socket.on('bye', (data) => {
-      });
-      socket.on('writeTodo', (data) => {
-        var filepath = path.join(__dirname,'./data/.todo.json')
-        Helper.writeToFile(filepath,data)
-        console.log("Todo data file updated!")
-      });
-
-      // TODO: combine them into one listener and emitter
-      var FeedSpider = require('./lib/feedAPI'),
-          //socketHandler = require('./lib/socketHandler'),
-          feed = new FeedSpider(),
-          allData = {},
-          readData = []
-      socket.on("rss", (request) =>{
-        feed.db.open((err, db) =>{
-          switch (request.type) {
-            case "auth":
-              feed.authenticate(request.user).then( (exist) => {
-                var response = {}
-                if(exist){
-                  response.status = 1;
-                  response.type = "auth";
-                  response.data = "Welcome back!";
-                }else{
-                  response.status = 0;
-                  response.type = "auth";
-                  response.data = "User doesn't exist!";
-                }
-                socket.emit("rssData",response)
-              })
-              break;
-            case "all":
-              feed.getUserData(request.user).then( (curUser) => {
-                readData = curUser.read;
-                feed.getSiteBySub(curUser.subscribe).then( (data) =>{
-                  // DONE: refactor with promise all and map
-                  return Promise.all( data.map( (v)=>{
-                    allData[v.feedUrl] = {}
-                    allData[v.feedUrl].title = v.title
-                    allData[v.feedUrl].link = v.link
-                    allData[v.feedUrl].entries = []
-                    var query = {
-                        feedUrl:v.feedUrl,
-                        feedData:allData[v.feedUrl],
-                        readData:curUser.read,
-                        amount:10,
-                        skip:0,
-                        skipRead:false
-                      }
-                    return feed.getDataByFeed(query)
-                  }) )
-                }).then( ()=>{
-                  var response = {};
-                  response.type = "all";
-                  response.data = allData;
-                  socket.emit("rssData",response)
-                  db.close()
-                },(reason)=>{
-                  var response = {};
-                  response.type = "error";
-                  response.data = reason;
-                  socket.emit("rssData",response)
-                  db.close()
-                })
-              })
-              break;
-            case "more":
-              var moreData = {}
-              moreData[request.feedUrl] = {}
-              moreData[request.feedUrl].entries = []
-              var query = {
-                feedUrl:request.feedUrl,
-                feedData:moreData[request.feedUrl],
-                readData:readData,
-                amount:request.amount || 10,
-                skip:request.totalNum,
-                skipRead:request.skipRead
-              };
-              feed.getDataByFeed(query).then( (data)=>{
-                var response = {};
-                response.type = "more";
-                response.data = moreData;
-                socket.emit("rssData",response)
-                db.close()
-              })
-              break;
-            case "itemClick":
-              feed.markRead(request.user,request.fid).then( ()=>{
-                db.close()
-              })
-              break;
-            case "newUser":
-              break;
-            case "newFeed":
-              feed.crawler(request.content,request.user).then( ()=>{
-                var moreFeedData = {}
-                console.log(feed.stats)
-                // and push updated feed data
-                feed.getUserData(request.user).then( (curUser) => {
-                  readData = curUser.read
-                  feed.getSiteBySub(curUser.subscribe).then( (res) =>{
-                    console.log("Got feed data")
-                    return Promise.all( res.map( (v)=>{
-                      moreFeedData[v.feedUrl] = {}
-                      moreFeedData[v.feedUrl].title = v.title
-                      moreFeedData[v.feedUrl].link = v.link
-                      moreFeedData[v.feedUrl].entries = []
-                      var query = {
-                        feedUrl:v.feedUrl,
-                        feedData:moreFeedData[v.feedUrl],
-                        readData:curUser.read,
-                        amount:10,
-                        skip:0,
-                        skipRead:false
-                      }
-                      return feed.getDataByFeed(query)
-                    }) )
-                  }).then( ()=>{
-                    var response = {};
-                    response.type = "more";
-                    response.data = moreFeedData;
-                    socket.emit("rssData",response)
-                    db.close()
-                  },(reason)=>{
-                    var response = {};
-                    response.type = "error";
-                    response.data = reason;
-                    socket.emit("rssData",response)
-                    db.close()
-                  })
-                })
-              },(reason)=>{
-                var response = {};
-                response.type = "error";
-                response.data = reason;
-                socket.emit("rssData",response)
-                db.close()
-              })
-              break;
-            default:
-              console.log(request);
-          }
-        })
-      })
+      var socketHandler = require('./lib/socketHandler');
+      socketHandler.rss(socket);
+      socketHandler.todo(socket);
+      socketHandler.widget(socket);
+      
     });
     
     console.log("Static file server running at\n  => http://localhost:8000/\nCTRL + C to shutdown");
@@ -936,9 +785,9 @@ class Baby{
 }
 
 // agreement on this project
-// will use snake_case or spinal-case for variables
-// will use camelCase for functions
-// will use CamelCase for class or global objec
+// will use CONST represent constants
+// will use camelCase for variables, functions
+// will use CamelCase for class
 
 //var complete = omelette("baby <action> <option> <value>");
 //
