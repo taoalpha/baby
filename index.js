@@ -580,7 +580,7 @@ class Baby{
             feedData:moreData[data.feedUrl],
             readData:readData,
             amount:10,
-            skip:data.curNum,
+            skip:data.totalNum,
             skipRead:data.skipRead
           };
           feed.getDataByFeed(query).then( (data)=>{
