@@ -463,130 +463,141 @@ class Baby{
         console.log("Todo data file updated!")
       });
 
-      var FeedSpider = require('./lib/feedAPI')
-      var feed = new FeedSpider()
-      var allData = {}
-      var readData = []
-      socket.on("rss_authenticate", (userData) =>{
+      // TODO: combine them into one listener and emitter
+      var FeedSpider = require('./lib/feedAPI'),
+          //socketHandler = require('./lib/socketHandler'),
+          feed = new FeedSpider(),
+          allData = {},
+          readData = []
+      socket.on("rss", (request) =>{
         feed.db.open((err, db) =>{
-          feed.authenticate(userData).then( (exist) => {
-            var data = {}
-            if(exist){
-              data.status = 1
-              data.msg = "Welcome back!"
-            }else{
-              data.status = 0
-              data.msg = "User doesn't exist!"
-            }
-            socket.emit("rss_authenticate_result",data)
-          })
-        })
-      })
-      // TODO: Need figure out a way to save the user data: maybe pass by the client everytime?
-      socket.on("giveMeFeedData", (user) => {
-        feed.db.open((err, db) =>{
-          // list stored with all promises
-          var promises = []
-        
-          feed.getUserData(user).then( (curUser) => {
-            readData = curUser.read;
-            feed.getSiteBySub(curUser.subscribe).then( (data) =>{
-              // DONE: refactor with promise all and map
-              return Promise.all( data.map( (v)=>{
-                allData[v.feedUrl] = {}
-                allData[v.feedUrl].title = v.title
-                allData[v.feedUrl].link = v.link
-                allData[v.feedUrl].entries = []
-                var query = {
-                    feedUrl:v.feedUrl,
-                    feedData:allData[v.feedUrl],
-                    readData:curUser.read,
-                    amount:10,
-                    skip:0,
-                    skipRead:false
-                  }
-                return feed.getDataByFeed(query)
-              }) )
-            }).then( ()=>{
-              socket.emit("feedData",allData)
-              db.close()
-            },(reason)=>{
-              console.log(reason)
-              socket.emit("feedData",reason)
-              db.close()
-            })
-          })
-        })
-      })
-      socket.on("addFeed",(data) =>{
-        console.log("Got msg")
-        var promises = []
-        feed.db.open((err, db) =>{
-          feed.crawler(data.content,data.user).then( ()=>{
-            console.log(feed.stats)
-            // and push updated feed data
-            feed.getUserData(data.user).then( (curUser) => {
-              readData = curUser.read
-              feed.getSiteBySub(curUser.subscribe).then( (res) =>{
-                console.log("Got feed data")
-                return Promise.all( res.map( (v)=>{
-                  allData[v.feedUrl] = {}
-                  allData[v.feedUrl].title = v.title
-                  allData[v.feedUrl].link = v.link
-                  allData[v.feedUrl].entries = []
-                  var query = {
-                    feedUrl:v.feedUrl,
-                    feedData:allData[v.feedUrl],
-                    readData:curUser.read,
-                    amount:10,
-                    skip:0,
-                    skipRead:false
-                  }
-                  return feed.getDataByFeed(query)
-                }) )
-              }).then( ()=>{
-                console.log("send data")
-                socket.emit("feedData",allData)
-                db.close()
-              },(reason)=>{
-                console.log(reason)
-                socket.emit("feedData",reason)
+          switch (request.type) {
+            case "auth":
+              feed.authenticate(request.user).then( (exist) => {
+                var response = {}
+                if(exist){
+                  response.status = 1;
+                  response.type = "auth";
+                  response.data = "Welcome back!";
+                }else{
+                  response.status = 0;
+                  response.type = "auth";
+                  response.data = "User doesn't exist!";
+                }
+                socket.emit("rssData",response)
+              })
+              break;
+            case "all":
+              feed.getUserData(request.user).then( (curUser) => {
+                readData = curUser.read;
+                feed.getSiteBySub(curUser.subscribe).then( (data) =>{
+                  // DONE: refactor with promise all and map
+                  return Promise.all( data.map( (v)=>{
+                    allData[v.feedUrl] = {}
+                    allData[v.feedUrl].title = v.title
+                    allData[v.feedUrl].link = v.link
+                    allData[v.feedUrl].entries = []
+                    var query = {
+                        feedUrl:v.feedUrl,
+                        feedData:allData[v.feedUrl],
+                        readData:curUser.read,
+                        amount:10,
+                        skip:0,
+                        skipRead:false
+                      }
+                    return feed.getDataByFeed(query)
+                  }) )
+                }).then( ()=>{
+                  var response = {};
+                  response.type = "all";
+                  response.data = allData;
+                  socket.emit("rssData",response)
+                  db.close()
+                },(reason)=>{
+                  var response = {};
+                  response.type = "error";
+                  response.data = reason;
+                  socket.emit("rssData",response)
+                  db.close()
+                })
+              })
+              break;
+            case "more":
+              var moreData = {}
+              moreData[request.feedUrl] = {}
+              moreData[request.feedUrl].entries = []
+              var query = {
+                feedUrl:request.feedUrl,
+                feedData:moreData[request.feedUrl],
+                readData:readData,
+                amount:request.amount || 10,
+                skip:request.totalNum,
+                skipRead:request.skipRead
+              };
+              feed.getDataByFeed(query).then( (data)=>{
+                var response = {};
+                response.type = "more";
+                response.data = moreData;
+                socket.emit("rssData",response)
                 db.close()
               })
-            })
-          },(reason)=>{
-            console.log(reason)
-            db.close()
-          })
-        })
-      })
-      socket.on("feedClick",(data) =>{
-        console.log("click")
-        feed.db.open((err, db) =>{
-          feed.markRead(data.user,data.fid).then( ()=>{
-            db.close()
-          })
-        })
-        //socket.removeAllListeners("rss_authenticate_result")
-      })
-      socket.on("loadMoreFeed",(data) =>{
-        console.log(data)
-        var moreData = {}
-        moreData[data.feedUrl] = {}
-        moreData[data.feedUrl].entries = []
-        feed.db.open((err, db) =>{
-          var query = {
-            feedUrl:data.feedUrl,
-            feedData:moreData[data.feedUrl],
-            readData:readData,
-            amount:10,
-            skip:data.totalNum,
-            skipRead:data.skipRead
-          };
-          feed.getDataByFeed(query).then( (data)=>{
-            socket.emit("moreFeed",moreData)
-            db.close()
-          })
+              break;
+            case "itemClick":
+              feed.markRead(request.user,request.fid).then( ()=>{
+                db.close()
+              })
+              break;
+            case "newUser":
+              break;
+            case "newFeed":
+              feed.crawler(request.content,request.user).then( ()=>{
+                var moreFeedData = {}
+                console.log(feed.stats)
+                // and push updated feed data
+                feed.getUserData(request.user).then( (curUser) => {
+                  readData = curUser.read
+                  feed.getSiteBySub(curUser.subscribe).then( (res) =>{
+                    console.log("Got feed data")
+                    return Promise.all( res.map( (v)=>{
+                      moreFeedData[v.feedUrl] = {}
+                      moreFeedData[v.feedUrl].title = v.title
+                      moreFeedData[v.feedUrl].link = v.link
+                      moreFeedData[v.feedUrl].entries = []
+                      var query = {
+                        feedUrl:v.feedUrl,
+                        feedData:moreFeedData[v.feedUrl],
+                        readData:curUser.read,
+                        amount:10,
+                        skip:0,
+                        skipRead:false
+                      }
+                      return feed.getDataByFeed(query)
+                    }) )
+                  }).then( ()=>{
+                    var response = {};
+                    response.type = "more";
+                    response.data = moreFeedData;
+                    socket.emit("rssData",response)
+                    db.close()
+                  },(reason)=>{
+                    var response = {};
+                    response.type = "error";
+                    response.data = reason;
+                    socket.emit("rssData",response)
+                    db.close()
+                  })
+                })
+              },(reason)=>{
+                var response = {};
+                response.type = "error";
+                response.data = reason;
+                socket.emit("rssData",response)
+                db.close()
+              })
+              break;
+            default:
+              console.log(request);
+          }
         })
       })
     });
