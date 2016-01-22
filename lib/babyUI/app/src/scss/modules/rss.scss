@@ -10,6 +10,19 @@
     cursor:pointer;
     right:-50px;
   }
+  #authentication{
+    button span{
+      width: 10em;
+      display: inline-block;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    button.disabled{
+      span {
+        animation:type 3s steps(60,end) infinite;
+      }
+    }
+  }
   .lv-container{
     .btns{
       position:absolute;
@@ -45,8 +58,17 @@
       }
       &.loadMore{
         text-align:center;
+        span {
+          width: 10em;
+          display: inline-block;
+          overflow: hidden;
+          white-space: nowrap;
+        }
         &.disabled{
           cursor:wait;
+          span {
+            animation:type 3s steps(60,end) infinite;
+          }
         }
       }
     }
@@ -66,5 +88,10 @@
   }
   to{
     transform:rotate(360deg);
+  }
+}
+@keyframes type{
+  from{
+    width:0;
   }
 }
