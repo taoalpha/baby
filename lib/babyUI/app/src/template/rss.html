@@ -24,6 +24,7 @@
           <h2 class='normal lv-item-title' ng-click="rss.expandItem(feedItem.key)" ng-class="{'selected':feedItem.key == rss.status.expandUrl}">
             <span class="title">{{feedItem.title}}</span>
             <span class="unreadNum" ng-show="feedItem.unreadNum != 0">{{feedItem.unreadNum}}</span>
+            <span class="delete" ng-click="rss.deleteFeed(feedItem.key,$event)"><i class="fa fa-trash"></i></span>
           </h2>
           <ul ng-show="feedItem.key == rss.status.expandUrl" >
             <li class="lv-item hint" ng-show="rss.status.skipRead && feedItem.unreadNum==0">You have read all latest feeds of this feed.</li>

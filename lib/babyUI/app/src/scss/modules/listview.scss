@@ -2,11 +2,10 @@
   overflow-x: hidden;
   overflow-y: scroll;
   &.collapse{
-    .lv-header{width:100%;}
+    .lv-header{width:100%;margin:0px;}
   }
   .lv-header{
-    width:80%;
-    margin:auto;
+    margin: 0 50px;
     padding:50px 0 0 0;
     position: relative;
     >span{
@@ -28,8 +27,7 @@
     }
   }
   .lv-container{
-    width: 80%;
-    margin: auto;
+    margin: 0 50px;
     padding-top: 30px;
     border-left: 1px solid #ccc;
     position: relative;
@@ -59,13 +57,30 @@
       border-bottom: 1px solid #ccc;
       font-size: 15px;
       margin: 0px;
+      position:relative;
       span{
         float:right;
         padding-right: 10px;
       }
+      span.delete{
+        position:absolute;
+        top:0px;
+        right:-50px;
+        width:50px;
+        height:100%;
+        line-height:40px;
+        text-align:center;
+        display:none;
+        padding:0px;
+        &:hover{
+          display:block;
+        }
+      }
+      &:hover span.delete{
+        display:block;
+      }
     }
     .lv-item{
-      padding: 10px 20px;
       border-left: 1px solid #ccc;
       border-bottom: 1px solid #ccc;
       position: relative;
