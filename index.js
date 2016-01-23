@@ -448,8 +448,9 @@ class Baby{
       socketHandler.rss(socket);
       socketHandler.todo(socket);
       socketHandler.widget(socket);
-      
+      socketHandler.tool(socket);
     });
+
     
     console.log("Static file server running at\n  => http://localhost:8000/\nCTRL + C to shutdown");
   }
