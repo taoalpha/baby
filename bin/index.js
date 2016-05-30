@@ -1,4 +1,3 @@
 #! /usr/bin/env node
-var Baby = require("../index")
-var baby = new Baby()
-baby.init()
+let Baby = require("../index")
+let baby = new Baby()
