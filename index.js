@@ -137,8 +137,13 @@ class Baby {
      */
     blog(args) {
         // blog new draft "name of the post" -c blog
-        let scaffolds = process.env.HOME+"/github/blog/scaffolds/";
-        let posts = process.env.HOME+"/github/blog/source/_posts/";
+        let scaffolds = path.join(process.env.HOME,"/github/blog/scaffolds/"),
+            blogDir = path.join(process.env.HOME,"/github/blog/"),
+            posts = path.join(process.env.HOME,"/github/blog/source/_posts/");
+        if (!helper.fileExists(blogDir,'dir')) {
+            console.log("No blog found in: ".red + blogDir.yellow);
+            return;
+        }
         if (helper.exists(args._[1])) {
             switch (args._[1]){
                 case "new":
@@ -146,22 +151,22 @@ class Baby {
                     title = args._[3] || args._[2];
                     if (!helper.fileExists(scaffolds+tmplName)) {
                         this.help("blog");
-                    } else {
-                        let tmpl = fs.readFileSync(scaffolds+tmplName,"utf-8"),
-                            filepath = posts+moment().format().split("T")[0]+"-"+title.replace(/\s-/g,'').replace(/ /g,'-')+".md",
-                            category = 'blog';
-                        if (helper.exists(args.c)) {
-                            category = args.c;
-                            filepath = posts+args.c+"/"+title.toLowerCase().replace(/\s-/g,'').replace(/ /g,'-')+".md";
-                        }
-                        tmpl = tmpl.replace(`{{ date }}`,moment().format().split(".")[0].replace("T"," "))
-                            .replace("{{ cat }}",category)
-                            .replace('{{ title }}',title)
-                            helper.writeToFile(filepath,tmpl,"text");
-                        console.log("Your post has created ans saved in:".green + `${filepath}`.red);
-                        args._[1] = filepath;
-                        this.edit();
+                        return;
                     }
+                    let tmpl = fs.readFileSync(scaffolds+tmplName,"utf-8"),
+                    filepath = posts+moment().format().split("T")[0]+"-"+title.replace(/\s-/g,'').replace(/ /g,'-')+".md",
+                    category = 'blog';
+                    if (helper.exists(args.c)) {
+                        category = args.c;
+                        filepath = posts+args.c+"/"+title.toLowerCase().replace(/\s-/g,'').replace(/ /g,'-')+".md";
+                    }
+                    tmpl = tmpl.replace(`{{ date }}`,moment().format().split(".")[0].replace("T"," "))
+                        .replace("{{ cat }}",category)
+                        .replace('{{ title }}',title);
+                    helper.writeToFile(filepath,tmpl,"text");
+                    console.log("Your post has created ans saved in:".green + `${filepath}`.red);
+                    args._[1] = filepath;
+                    this.edit();
                     break;
                 case "d":
                     let deploy = helper.spawn('hexo','g --deploy');
@@ -174,6 +179,9 @@ class Baby {
         }
     }
 
+    /* 
+     * Edit the config file 
+     */
     config(args) {
         let configFilePath = path.join(__dirname,'./data/.config.json');
         args._[1] = configFilePath;
@@ -223,7 +231,17 @@ class Baby {
         args.isDir = helper.fileExists(filepath,'dir');
         args.isFile = helper.fileExists(filepath);
         if (!args.isDir && !args.isFile) {
-            console.log("Wrong input stream, expected a file or directory!".yellow);
+            let rl = readline.createInterface({
+                input: process.stdin,
+                output: process.stdout
+            });
+            rl.question(`The file ${filepath} does not exist, create it now (Y) ? `, (answer) => {
+                if (answer == "" || answer.toLowerCase() == "y"){
+                    helper.writeToFile(filepath,'', 'text');
+                    this.edit(args);
+                }
+                rl.close();
+            });
             return;
         }
         // get the initial number of lines
@@ -456,28 +474,32 @@ class Baby {
                 console.log(`${err}`.red);
                 return;
             }
-            let rightPrefix = false;
-            filepath = [book_dir + "/" + list[Math.floor(Math.random()*list.length)]];
-            if (!helper.exists(args._[1])) {
-                rightPrefix = true;
-            }
+            let rightPrefix = false,
+            fName = list[Math.floor(Math.random()*list.length)];
+            filepath = [book_dir + "/" + fName]
+                if (!helper.exists(args._[1])) {
+                    rightPrefix = true;
+                }
             let count = 0;
             while (!rightPrefix && count < 300) {
-                let fName = list[Math.floor(Math.random()*list.length)];
-                if (fName.toLowerCase().indexOf(args._[1].toLowerCase()) > -1) {
-                    rightPrefix = true;
-                    filepath = [book_dir + "/" + fName];
-                }
+                fName = list[Math.floor(Math.random()*list.length)]
+                    if (fName.toLowerCase().indexOf(args._[1].toLowerCase()) > -1) {
+                        rightPrefix = true;
+                        filepath = [book_dir + "/" + fName];
+                    }
                 count ++;
             }
             if (!rightPrefix) {
-                console.log(`${helper.Colors.FgGreen} No match book found ! ${helper.Colors.Reset}`);
+                console.log(`No match book found !`.red);
             } else {
-                let book = helper.spawn('open',filepath);
-                book.on('close',(code) => {
-                    args.action = "reading";
-                    helper.sayGoodBye(args);
-                })
+                console.log(`You are gonna read: `.green +`${fName}`.yellow);
+                setTimeout( () => {
+                    let book = helper.spawn('open',filepath);
+                    book.on('close',(code) => {
+                        args.action = "reading";
+                        helper.sayGoodBye(args);
+                    })
+                }, 2000)
             }
         })
     }
@@ -576,7 +598,7 @@ class Baby {
     ssh(args) {
         let presetaddresses = {
             weirss : ["root@weirss.me"],
-            pi: ["pi@104.229.171.106"],
+            pi: ["pi@pi@192.168.0.107"],
             gary : ["gary@zzgary.info","-p","2120"],
             juan : ["root@www.51juanzeng.com"],
             aws : ["-i",process.env.HOME+"/temp/taoalpha.pem","ubuntu@52.32.254.98"],
@@ -684,6 +706,7 @@ class Baby {
                         oldData: {},
                         doneItems: 0
                     });
+                    /* enable todo in config */
                     helper.sayGoodBye(args);
                 }
                 rl.close();
@@ -752,7 +775,7 @@ class Baby {
                     content.data[dateID].doneItems = content.data[dateID].doneItems || 0;
                     content.data[dateID].addTime = content.data[dateID].addTime || moment().format();
                     content.data[dateID].items = content.data[dateID].items || [];
-                    content.data[dateID].items.unshift(newItem);
+                    content.data[dateID].items.push(newItem);
                     content.total += 1;
                     showList();
                 } else {
@@ -848,6 +871,9 @@ class Baby {
                 // find repeated part of your code with similarity of string
                 helper.calculateRepeat(args._[2]);
                 break;
+            case "alias":
+                args._[1] = "~/.oh-my-zsh/alias.sh";
+                this.edit(args);
             default:
                 this.help("todo");
         }
@@ -856,8 +882,7 @@ class Baby {
     /*
      * output the help message.
      */
-    help(){
-        let args = this.userArgs;
+    help(args) {
         let helpDoc = {
             usage:{
                 blog:    "baby blog <command>                create new post",
