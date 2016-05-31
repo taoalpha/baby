@@ -45,8 +45,10 @@ class Baby {
         let configFilePath = path.join(__dirname,'./data/.config.json');
         if (helper.fileExists(configFilePath)) {
             this.userArgs.CONFIG = require(configFilePath);
+            /* init with config */
             this.init();
         } else {
+            console.log("Welcome to baby ! ^_^".yellow);
             console.log("Initialize with default configuration."+" You can edit with "+"'baby config'".green +" any time you want.");
             let questions = ["Your nickname(honey): ", "Enable the writing summary(Y): ", "Enable the idea collector(Y): ","Enable the todo collector(Y): ", "Enable the autoComplete(N): "],
                 answers = {},
@@ -61,6 +63,8 @@ class Baby {
                     }
                     helper.writeToFile(configFilePath, answers);
                     this.userArgs.CONFIG = answers;
+
+                    /* init summary data if enable the summary */
                     if (answers['summary']) {
                         helper.writeToFile(path.join(answers.dataPath+"/.gSummary.json"),{
                             total: 0,
@@ -71,6 +75,8 @@ class Baby {
                             }
                         });
                     }
+
+                    /* init todo data if enable the todo */
                     if (answers.todo) {
                         helper.writeToFile(path.join(answers.dataPath+"/.todo.json"),{
                             total: 0,
@@ -81,6 +87,8 @@ class Baby {
                             doneItems: 0
                         });
                     }
+
+                    /* init idea data if enable the idea */
                     if (answers.idea) {
                         helper.writeToFile(path.join(answers.dataPath+"/.idea.json"),{
                             total: 0,
@@ -89,6 +97,8 @@ class Baby {
                             ideas: []
                         });
                     }
+
+                    /* init with config */
                     this.init();
                 };
             helper.ask(questions,[],cb);
@@ -108,6 +118,10 @@ class Baby {
             this[this.shortName[cmd]](this.userArgs);
         } else if (this[cmd]) {
             this[cmd](this.userArgs);
+        } else if (helper.fileExists(cmd) || helper.fileExists(cmd,'dir')) {
+            // init as editor if passed in a file or directory
+            this.userArgs._[1] = cmd;
+            this.edit(this.userArgs);
         } else {
             this.help();
         }
@@ -115,6 +129,7 @@ class Baby {
 
     /*
      * helper function for writing and deploying my blog
+     * @param {object} args - userArgs
      */
     blog(args) {
         // blog new draft "name of the post" -c blog
@@ -158,8 +173,14 @@ class Baby {
         }
     }
 
+    config(args) {
+        let configFilePath = path.join(__dirname,'./data/.config.json');
+        args._[1] = configFilePath;
+        this.edit(args);
+    }
     /*
      * search helper for searching cdnjs for specific libraries
+     * @param {object} args - userArgs
      */
     cdn(args) {
         if(args._[1]){
@@ -189,6 +210,7 @@ class Baby {
 
     /*
      * editor helper for recording editing history
+     * @param {object} args - userArgs
      */
     edit(args) {
         let initial_lines = 0, end_lines = 0,filepath = '';
@@ -235,6 +257,7 @@ class Baby {
 
     /*
      * git helper for daily commits
+     * @param {object} args - userArgs
      */
     git(args) {
         if (helper.exists(args._[1])) {
@@ -255,6 +278,7 @@ class Baby {
 
     /*
      * idea collector
+     * @param {object} args - userArgs
      */
     idea(args) {
         let filepath = path.join(__dirname, args.CONFIG.dataPath, '/.idea.json'),
@@ -364,6 +388,7 @@ class Baby {
 
     /*
      * npm helper
+     * @param {object} args - userArgs
      */
     npm(args) {
         if (helper.exists(args._[1]) && args._[1] == "update") {
@@ -390,14 +415,16 @@ class Baby {
     }
 
     /*
-     * oj helper
+     * oj helper, open browser with a random leetcode problem
+     * @param {object} args - userArgs
      */
     oj(args) {
-        helper.exec('open https://leetcode.com/problemset/algorithms/', (out) => { helper.sayGoodBye(args); })
+        helper.exec('open https://leetcode.com/problems/random-one-question/algorithms', (out) => { helper.sayGoodBye(args); })
     }
 
     /*
      * positive words
+     * @param {object} args - userArgs
      */
     praise(args){
         let stdin = process.stdin;
@@ -409,17 +436,25 @@ class Baby {
                 process.exit();
             }
         });
-        setInterval(helper.praiseMe,2000)
+        setInterval(() => {
+            let adj = ["awesome","fantastic","wonderful","fabulous","outstanding","legendary","great","briliant","talented","amazing"];
+            let color = ["red","yellow","green","magenta","blue","cyan","rainbow","zebra","trap","america"];
+            console.log(`Tao, You are truly ${adj[Math.floor(Math.random()*adj.length)]}!`[color[Math.floor(Math.random()*color.length)]]);
+        },2000)
     }
 
     /*
      * open a book from my reading list
+     * @param {object} args - userArgs
      */
     read(args){
         let filepath = '',
         book_dir = process.env.HOME+"/readings",
         books = fs.readdir(book_dir, (err,list) => {
-            if (err) return err;
+            if (err !== null) {
+                console.log(`${err}`.red);
+                return;
+            }
             let rightPrefix = false;
             filepath = [book_dir + "/" + list[Math.floor(Math.random()*list.length)]];
             if (!helper.exists(args._[1])) {
@@ -448,6 +483,7 @@ class Baby {
 
     /*
      * rss reader
+     * @param {object} args - userArgs
      */
     rss(args) {
         // will use the request and cheerio to get and parse the html, maybe need phantomjs to help me deal with some dynamic stuff
@@ -455,6 +491,7 @@ class Baby {
 
     /*
      * create a http server with specific directory
+     * @param {object} args - userArgs
      */
     serve(args){
         let pathname = path.join(__dirname,'./lib/babyUI/dist/');
@@ -520,6 +557,7 @@ class Baby {
 
     /*
      * sleep helper
+     * @param {object} args - userArgs
      */
     sleep(args) {
         let delay = args._[1] || args["t"] || args["time"] || 2;
@@ -532,6 +570,7 @@ class Baby {
 
     /*
      * ssh helper
+     * @param {object} args - userArgs
      */
     ssh(args) {
         let presetaddresses = {
@@ -556,6 +595,7 @@ class Baby {
 
     /*
      * summary recorder
+     * @param {object} args - userArgs
      */
     summary(args, data) {
         // need a config file
@@ -622,6 +662,7 @@ class Baby {
 
     /*
      * todo list
+     * @param {object} args - userArgs
      */
     todo(args) {
         let filepath = path.join(__dirname, args.CONFIG.dataPath, '/.todo.json'),
@@ -794,12 +835,13 @@ class Baby {
 
     /*
      * tools
+     * @param {object} args - userArgs
      */
     tool(args) {
         switch (args._[1]){
             case "pf":
                 // print the file structure of current working directory
-                helper.printFiles(process.cwd());
+                helper.printFiles(process.cwd(),args._[2]);
                 break;
             case "rp":
                 // find repeated part of your code with similarity of string
@@ -817,16 +859,16 @@ class Baby {
         let args = this.userArgs;
         let helpDoc = {
             usage:{
-                init:    "baby init [-e]                     Initial with default configuration or edit the configuration",
                 blog:    "baby blog <command>                create new post",
                 cdn:     "baby cdn <prefix>                  Search for popular front-end frameword with cdnjs resoureces", 
+                config:  "baby config                        Edit config file",
                 edit:    "baby edit <path-to-file> ...       Edit one file, use vim as the default editor",
                 idea:    "baby idea [ -a -d -r -e ] ...      A simple idea collection tool",
                 npm:     "baby npm <command> [--latest]      Help update local npm modules to the latest or wanted version",
                 oj:      "baby oj                            open the oj with a random question",
                 praise:  "baby praise                        Show me some positive energy",
                 read:    "baby read                          Pick a random book from my reading list and open it",
-                rss:     "baby rss                           Under constructing...",
+                rss:     "baby rss                           Under developing ...",
                 serve:   "baby serve <path>                  Create a http server with any path", 
                 sleep:   "baby sleep [-t | --time]           Close the display within specific duration",
                 ssh:     "baby ssh <address> [-n | --name]   Log in with an address or a shortcut name",
@@ -847,7 +889,6 @@ class Baby {
                 8:"-r,--remove     Remove specific task"
             }
         }
-        console.log("Welcome to baby ! ^_^");
         if (typeof args === "string") {
             console.log(helpDoc.usage[args])
         } else if (args._[1] && helpDoc.usage.hasOwnProperty(args._[1])) {
