@@ -109,11 +109,15 @@ class Baby {
      * init the dispatcher with userArgs
      */
     init() {
-        // never start with empty config
-        if (!this.userArgs.CONFIG) {
+        /* never start with empty config */
+        if (!this.userArgs.CONFIG || this.userArgs._[0] == "init") {
             return;
         }
         let cmd = this.userArgs._[0];
+        /* not callable to external */
+        if (cmd == "init") {
+            this.help();
+        }
         if (this.shortName.hasOwnProperty(cmd)) {
             this[this.shortName[cmd]](this.userArgs);
         } else if (this[cmd]) {
@@ -159,11 +163,8 @@ class Baby {
                         this.edit();
                     }
                     break;
-                case "dir":
-                    let dir = "~/github/blog",
-                    proc = require('child_process').spawn('pbcopy');
-                    proc.stdin.write(dir);
-                    proc.stdin.end();
+                case "d":
+                    let deploy = helper.spawn('hexo','g --deploy');
                     break;
                 default:
                     this.help("blog");
