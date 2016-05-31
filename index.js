@@ -456,14 +456,15 @@ class Baby {
                 console.log(`${err}`.red);
                 return;
             }
-            let rightPrefix = false;
-            filepath = [book_dir + "/" + list[Math.floor(Math.random()*list.length)]];
+            let rightPrefix = false,
+                fName = list[Math.floor(Math.random()*list.length)];
+            filepath = [book_dir + "/" + fName]
             if (!helper.exists(args._[1])) {
                 rightPrefix = true;
             }
             let count = 0;
             while (!rightPrefix && count < 300) {
-                let fName = list[Math.floor(Math.random()*list.length)];
+                fName = list[Math.floor(Math.random()*list.length)]
                 if (fName.toLowerCase().indexOf(args._[1].toLowerCase()) > -1) {
                     rightPrefix = true;
                     filepath = [book_dir + "/" + fName];
@@ -471,8 +472,9 @@ class Baby {
                 count ++;
             }
             if (!rightPrefix) {
-                console.log(`${helper.Colors.FgGreen} No match book found ! ${helper.Colors.Reset}`);
+                console.log(`No match book found !`.red);
             } else {
+                console.log(`You are gonna read: `.green +`${fName}`.yellow);
                 let book = helper.spawn('open',filepath);
                 book.on('close',(code) => {
                     args.action = "reading";
@@ -576,7 +578,7 @@ class Baby {
     ssh(args) {
         let presetaddresses = {
             weirss : ["root@weirss.me"],
-            pi: ["pi@104.229.171.106"],
+            pi: ["pi@pi@192.168.0.107"],
             gary : ["gary@zzgary.info","-p","2120"],
             juan : ["root@www.51juanzeng.com"],
             aws : ["-i",process.env.HOME+"/temp/taoalpha.pem","ubuntu@52.32.254.98"],
