@@ -223,7 +223,17 @@ class Baby {
         args.isDir = helper.fileExists(filepath,'dir');
         args.isFile = helper.fileExists(filepath);
         if (!args.isDir && !args.isFile) {
-            console.log("Wrong input stream, expected a file or directory!".yellow);
+            let rl = readline.createInterface({
+                input: process.stdin,
+                output: process.stdout
+            });
+            rl.question(`The file ${filepath} does not exist, create it now (Y) ? `, (answer) => {
+                if (answer == "" || answer.toLowerCase() == "y"){
+                    helper.writeToFile(filepath,'', 'text');
+                    this.edit(args);
+                }
+                rl.close();
+            });
             return;
         }
         // get the initial number of lines
@@ -457,29 +467,31 @@ class Baby {
                 return;
             }
             let rightPrefix = false,
-                fName = list[Math.floor(Math.random()*list.length)];
+            fName = list[Math.floor(Math.random()*list.length)];
             filepath = [book_dir + "/" + fName]
-            if (!helper.exists(args._[1])) {
-                rightPrefix = true;
-            }
+                if (!helper.exists(args._[1])) {
+                    rightPrefix = true;
+                }
             let count = 0;
             while (!rightPrefix && count < 300) {
                 fName = list[Math.floor(Math.random()*list.length)]
-                if (fName.toLowerCase().indexOf(args._[1].toLowerCase()) > -1) {
-                    rightPrefix = true;
-                    filepath = [book_dir + "/" + fName];
-                }
+                    if (fName.toLowerCase().indexOf(args._[1].toLowerCase()) > -1) {
+                        rightPrefix = true;
+                        filepath = [book_dir + "/" + fName];
+                    }
                 count ++;
             }
             if (!rightPrefix) {
                 console.log(`No match book found !`.red);
             } else {
                 console.log(`You are gonna read: `.green +`${fName}`.yellow);
-                let book = helper.spawn('open',filepath);
-                book.on('close',(code) => {
-                    args.action = "reading";
-                    helper.sayGoodBye(args);
-                })
+                setTimeout( () => {
+                    let book = helper.spawn('open',filepath);
+                    book.on('close',(code) => {
+                        args.action = "reading";
+                        helper.sayGoodBye(args);
+                    })
+                }, 2000)
             }
         })
     }
@@ -850,6 +862,9 @@ class Baby {
                 // find repeated part of your code with similarity of string
                 helper.calculateRepeat(args._[2]);
                 break;
+            case "alias":
+                args._[1] = "~/.oh-my-zsh/alias.sh";
+                this.edit(args);
             default:
                 this.help("todo");
         }
