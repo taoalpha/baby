@@ -166,7 +166,7 @@ class Baby {
                     helper.writeToFile(filepath,tmpl,"text");
                     console.log("Your post has created ans saved in:".green + `${filepath}`.red);
                     args._[1] = filepath;
-                    this.edit();
+                    this.edit(args);
                     break;
                 case "d":
                     let deploy = helper.spawn('hexo','g --deploy');
