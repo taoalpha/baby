@@ -598,7 +598,7 @@ class Baby {
     ssh(args) {
         let presetaddresses = {
             weirss : ["root@weirss.me"],
-            pi: ["pi@pi@192.168.0.107"],
+            pi: ["pi@192.168.0.107"],
             gary : ["gary@zzgary.info","-p","2120"],
             juan : ["root@www.51juanzeng.com"],
             aws : ["-i",process.env.HOME+"/temp/taoalpha.pem","ubuntu@52.32.254.98"],
