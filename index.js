@@ -116,7 +116,7 @@ class Baby {
     let cmd = this.userArgs._[0];
     /* not callable to external */
     if (cmd == "init") {
-      this.help();
+      this.help(this.userArgs);
     }
     if (this.shortName.hasOwnProperty(cmd)) {
       this[this.shortName[cmd]](this.userArgs);
@@ -127,7 +127,7 @@ class Baby {
       this.userArgs._[1] = cmd;
       this.edit(this.userArgs);
     } else {
-      this.help();
+      this.help(this.userArgs);
     }
   }
 
@@ -915,6 +915,7 @@ class Baby {
         8:"-r,--remove     Remove specific task"
       }
     }
+
     if (typeof args === "string") {
       console.log(helpDoc.usage[args])
     } else if (args._[1] && helpDoc.usage.hasOwnProperty(args._[1])) {
