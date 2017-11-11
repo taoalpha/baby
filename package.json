@@ -27,7 +27,7 @@
     "colors": "^1.1.2",
     "google-feed": "0.0.10",
     "minimist": "^1.2.0",
-    "moment": "^2.10.6",
+    "moment": "^2.19.2",
     "mongodb": "^2.1.4",
     "omelette": "^0.4.0",
     "optimist": "^0.6.1",
