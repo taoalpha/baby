@@ -24,7 +24,7 @@
   "license": "MIT",
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
-    "colors": "^1.1.2",
+    "colors": "^1.2.3",
     "google-feed": "0.0.10",
     "minimist": "^1.2.0",
     "moment": "^2.10.6",
